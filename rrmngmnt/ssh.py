@@ -5,7 +5,7 @@ import contextlib
 import subprocess
 from rrmngmnt.resource import Resource
 
-SSH_DIR_PATH = "~/.ssh"
+SSH_DIR_PATH = os.path.expanduser("~/.ssh")
 AUTHORIZED_KEYS = os.path.join(SSH_DIR_PATH, "authorized_keys")
 KNOWN_HOSTS = os.path.join(SSH_DIR_PATH, "known_hosts")
 ID_RSA_PUB = os.path.join(SSH_DIR_PATH, "id_rsa.pub")
@@ -47,7 +47,7 @@ class RemoteExecutor(Resource):
         """
         Represents active ssh connection
         """
-        def __init__(self, host, timeout=None):
+        def __init__(self, host, timeout=None, use_pkey=False):
             super(RemoteExecutor.Session, self).__init__()
             if timeout is None:
                 timeout = RemoteExecutor.TCP_TIMEOUT
@@ -55,6 +55,13 @@ class RemoteExecutor(Resource):
             self._h = host
             self._ssh = paramiko.SSHClient()
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            if use_pkey:
+                self.pkey = paramiko.RSAKey.from_private_key_file(
+                    ID_RSA_PRV
+                )
+                self._h.user.password = None
+            else:
+                self.pkey = None
 
         @property
         def logger(self):
@@ -82,7 +89,8 @@ class RemoteExecutor(Resource):
                     self._h.address,
                     username=self._h.user.name,
                     password=self._h.user.password,
-                    timeout=self._timeout
+                    timeout=self._timeout,
+                    pkey=self.pkey
                 )
             except (socket.gaierror, socket.herror) as ex:
                 args = list(ex.args)
@@ -208,16 +216,19 @@ class RemoteExecutor(Resource):
                 self.err = err.read()
             return self.rc, self.out, self.err
 
-    def __init__(self, user, address):
+    def __init__(self, user, address, use_pkey=False):
         """
         :param user: user
         :type user: instance of User
         :param address: ip / hostname
         :type address: str
+        :param use_pkey: use ssh private key in the connection
+        :type use_pkey: bool
         """
         super(RemoteExecutor, self).__init__()
         self.user = user
         self.address = address
+        self.use_pkey = use_pkey
 
     def session(self, timeout=None):
         """
@@ -226,7 +237,7 @@ class RemoteExecutor(Resource):
         :return: the session
         :rtype: instance of RemoteExecutor.Session
         """
-        return RemoteExecutor.Session(self, timeout)
+        return RemoteExecutor.Session(self, timeout, self.use_pkey)
 
     def run_cmd(self, cmd, input_=None, tcp_timeout=None, io_timeout=None):
         """

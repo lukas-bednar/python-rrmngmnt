@@ -1,6 +1,7 @@
 import os
 import socket
 import netaddr
+import copy
 from rrmngmnt.common import fqdn2ip
 from rrmngmnt.resource import Resource
 from rrmngmnt.service import Systemd, SysVinit, InitCtl
@@ -105,10 +106,10 @@ class Host(Resource):
     def package_manager(self):
         return self._package_manager
 
-    def executor(self, user=None):
+    def executor(self, user=None, pkey=False):
         if user is None:
-            user = self.root_user
-        return ssh.RemoteExecutor(user, self.ip)
+            user = copy.copy(self.root_user)
+        return ssh.RemoteExecutor(user, self.ip, use_pkey=pkey)
 
     def run_command(self, command):
         """
