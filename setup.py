@@ -20,7 +20,7 @@ setup(
     keywords="remote resources services",
     url="https://github.com/lukas-bednar/python-rrmngmnt",
     platforms=['linux'],
-    packages=['rrmngmnt', 'tests'],
+    packages=['rrmngmnt'],
     long_description=read('README.md'),
     install_requires=['paramiko', 'netaddr'],
     classifiers=[
