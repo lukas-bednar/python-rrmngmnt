@@ -9,6 +9,7 @@ from rrmngmnt.network import Network
 from rrmngmnt.filesystem import FileSystem
 from rrmngmnt.package_manager import PackageManagerProxy
 from rrmngmnt import ssh
+from rrmngmnt.storage import NFSService, LVMService
 
 
 class Host(Resource):
@@ -120,6 +121,7 @@ class Host(Resource):
         :return: tuple of (rc, out, err)
         :rtype: tuple
         """
+        self.logger.info("Executing command %s", ' '.join(command))
         rc, out, err = self.executor().run_cmd(command)
         if rc:
             self.logger.error(
@@ -270,6 +272,14 @@ class Host(Resource):
     @property
     def network(self):
         return self.get_network()
+
+    @property
+    def nfs(self):
+        return NFSService(self)
+
+    @property
+    def lvm(self):
+        return LVMService(self)
 
     @property
     def fs(self):
