@@ -465,6 +465,24 @@ class Network(Service):
                 for k, v in params.iteritems():
                     resource_file.write("%s=%s\n" % (k, v))
 
+    def delete_ifcfg_file(self, nic, ifcfg_path=IFCFG_PATH):
+        """
+        Delete ifcfg file
+
+        :param nic: NIC name
+        :type nic: str
+        :param ifcfg_path: Ifcfg files path
+        :type ifcfg_path: str
+        :return: True/False
+        :rtype: bool
+        """
+        dst = os.path.join(ifcfg_path, "ifcfg-%s" % nic)
+        logger.info("Delete %s ", dst)
+        if not self.host.fs.remove(dst):
+            logger.error("Failed to delete %s", dst)
+            return False
+        return True
+
     def send_icmp(self, dst, count="5", size="1500", extra_args=None):
         """
         Send ICMP to destination IP/FQDN
@@ -508,4 +526,22 @@ class Network(Service):
         for nic in nics:
             str_cmd = base_cmd % (mtu, nic)
             self._cmd(shlex.split(str_cmd))
+        return True
+
+    def delete_interface(self, interface):
+        """
+        Delete interface from host
+
+        :param interface: Interface name
+        :type interface: str
+        :return: True/False
+        :rtype: bool
+        """
+        cmd = "ip link del %s" % interface
+        try:
+            logger.info("Delete %s interface", interface)
+            self._cmd(shlex.split(cmd))
+        except Exception as e:
+            logger.error(e)
+            return False
         return True
