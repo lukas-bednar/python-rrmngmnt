@@ -27,6 +27,8 @@ class FileSystem(Service):
     unlink = remove
 
     def rmdir(self, path):
+        if path == "/":
+            raise ValueError("Attempt to remove root dir '/' !")
         return self.host.executor().run_cmd(
             ['rm', '-rf', path]
         )[0] == 0

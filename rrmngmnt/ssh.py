@@ -3,7 +3,7 @@ import socket
 import paramiko
 import contextlib
 import subprocess
-from rrmngmnt.resource import Resource
+from rrmngmnt.executor import Executor
 
 SSH_DIR_PATH = os.path.expanduser("~/.ssh")
 AUTHORIZED_KEYS = os.path.join(SSH_DIR_PATH, "authorized_keys")
@@ -12,7 +12,7 @@ ID_RSA_PUB = os.path.join(SSH_DIR_PATH, "id_rsa.pub")
 ID_RSA_PRV = os.path.join(SSH_DIR_PATH, "id_rsa")
 
 
-class RemoteExecutor(Resource):
+class RemoteExecutor(Executor):
     """
     Any resource which provides SSH service.
 
@@ -27,49 +27,40 @@ class RemoteExecutor(Resource):
 
     TCP_TIMEOUT = 10.0
 
-    class LoggerAdapter(Resource.LoggerAdapter):
+    class LoggerAdapter(Executor.LoggerAdapter):
         """
         Makes sure that all logs which are done via this class, has
-        appropriate prefix. [IP, user, password]
+        appropriate prefix. [user@IP/password]
         """
         def process(self, msg, kwargs):
             return (
-                "[%s, %s, %s] %s" % (
-                    self.extra['self'].address,
+                "[%s@%s/%s] %s" % (
                     self.extra['self'].user.name,
+                    self.extra['self'].address,
                     self.extra['self'].user.password,
                     msg,
                 ),
                 kwargs,
             )
 
-    class Session(object):
+    class Session(Executor.Session):
         """
         Represents active ssh connection
         """
-        def __init__(self, host, timeout=None, use_pkey=False):
-            super(RemoteExecutor.Session, self).__init__()
+        def __init__(self, executor, timeout=None, use_pkey=False):
+            super(RemoteExecutor.Session, self).__init__(executor)
             if timeout is None:
                 timeout = RemoteExecutor.TCP_TIMEOUT
             self._timeout = timeout
-            self._h = host
             self._ssh = paramiko.SSHClient()
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if use_pkey:
                 self.pkey = paramiko.RSAKey.from_private_key_file(
                     ID_RSA_PRV
                 )
-                self._h.user.password = None
+                self._executor.user.password = None
             else:
                 self.pkey = None
-
-        @property
-        def logger(self):
-            return self._h.logger
-
-        def __enter__(self):
-            self.open()
-            return self
 
         def __exit__(self, type_, value, tb):
             if type_ is socket.timeout:
@@ -80,21 +71,23 @@ class RemoteExecutor(Resource):
                 if type_ is None:
                     raise
                 else:
-                    self._h.logger.debug("Can not close ssh session %s", ex)
+                    self._executor.logger.debug(
+                        "Can not close ssh session %s", ex,
+                    )
 
         def open(self):
             self._ssh.get_host_keys().clear()
             try:
                 self._ssh.connect(
-                    self._h.address,
-                    username=self._h.user.name,
-                    password=self._h.user.password,
+                    self._executor.address,
+                    username=self._executor.user.name,
+                    password=self._executor.user.password,
                     timeout=self._timeout,
                     pkey=self.pkey
                 )
             except (socket.gaierror, socket.herror) as ex:
                 args = list(ex.args)
-                message = "%s: %s" % (self._h.address, args[1])
+                message = "%s: %s" % (self._executor.address, args[1])
                 args[1] = message
                 ex.strerror = message
                 ex.args = tuple(args)
@@ -112,7 +105,7 @@ class RemoteExecutor(Resource):
             if timeout is None:
                 timeout = self._timeout
             message = "%s: timeout(%s)" % (
-                self._h.address, timeout
+                self._executor.address, timeout
             )
             ex.args = (message,)
             ex._updated = True
@@ -136,7 +129,7 @@ class RemoteExecutor(Resource):
                 ) as fh:
                     yield fh
 
-    class Command(object):
+    class Command(Executor.Command):
         """
         This class holds all data related to command execution.
          - the command itself
@@ -145,19 +138,13 @@ class RemoteExecutor(Resource):
          - returncode the exit status of command
         """
         def __init__(self, cmd, session):
-            super(RemoteExecutor.Command, self).__init__()
-            self.out = None
-            self.err = None
-            self.cmd = subprocess.list2cmdline(cmd)
-            self._rc = None
+            super(RemoteExecutor.Command, self).__init__(
+                subprocess.list2cmdline(cmd),
+                session,
+            )
             self._in = None
             self._out = None
             self._err = None
-            self._ss = session
-
-        @property
-        def logger(self):
-            return self._ss.logger
 
         def get_rc(self, wait=False):
             if self._rc is None:
@@ -165,11 +152,6 @@ class RemoteExecutor(Resource):
                     if self._out.channel.exit_status_ready() or wait:
                         self._rc = self._out.channel.recv_exit_status()
             return self._rc
-
-        @property
-        def rc(self):
-            return self.get_rc()
-        returncode = rc
 
         @contextlib.contextmanager
         def execute(self, bufsize=-1, timeout=None, get_pty=False):
@@ -225,8 +207,7 @@ class RemoteExecutor(Resource):
         :param use_pkey: use ssh private key in the connection
         :type use_pkey: bool
         """
-        super(RemoteExecutor, self).__init__()
-        self.user = user
+        super(RemoteExecutor, self).__init__(user)
         self.address = address
         self.use_pkey = use_pkey
 
