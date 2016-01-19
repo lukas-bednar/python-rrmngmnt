@@ -7,7 +7,7 @@ def fake_cmd_data(cmd_to_data, files):
     def executor(self, user=None):
         e = FakeExecutor(user)
         e.cmd_to_data = cmd_to_data.copy()
-        e.files=files
+        e.files = files
         return e
     Host.executor = executor
 
@@ -185,6 +185,7 @@ class TestNetwork(object):
 
 
 class TestHostNameCtl(object):
+
     data = {
         'which hostnamectl': (0, '/usr/bin/hostnamectl', ''),
         'hostnamectl set-hostname something': (0, '', ''),
@@ -194,6 +195,7 @@ class TestHostNameCtl(object):
     }
     files = {
     }
+
     @classmethod
     def setup_class(cls):
         fake_cmd_data(cls.data, cls.files)
@@ -206,6 +208,7 @@ class TestHostNameCtl(object):
 
 
 class TestHostNameEtc(object):
+
     data = {
         'which hostnamectl': (1, '', ''),
         'hostname': (0, 'local', ''),
@@ -214,6 +217,7 @@ class TestHostNameEtc(object):
     }
     files = {
     }
+
     @classmethod
     def setup_class(cls):
         fake_cmd_data(cls.data, cls.files)
