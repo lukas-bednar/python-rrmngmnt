@@ -115,7 +115,6 @@ class TestSystemd(TestSystemService):
 
 class TestSysVinit(TestSystemService):
     __test__ = True
-    
     factory = SysVinit
     data = {
         'which service': (0, '/usr/sbin/service', ''),
@@ -148,7 +147,6 @@ class TestSysVinit(TestSystemService):
 
 class TestInitCtl(TestSystemService):
     __test__ = True
-    
     factory = InitCtl
     data = {
         'which initctl': (0, '/sbin/initctl', ''),
