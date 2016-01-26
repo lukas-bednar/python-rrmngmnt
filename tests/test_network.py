@@ -132,6 +132,10 @@ class TestNetwork(object):
                 ]
             ),
             '',
+        ),
+        "ethtool -P enp5s0f0": (
+            0,
+            "Permanent address: 44:1e:a1:73:3c:98"
         )
     }
     files = {
