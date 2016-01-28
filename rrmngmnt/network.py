@@ -555,8 +555,5 @@ class Network(Service):
         :return: mac address
         :rtype: str
         """
-        try:
-            interface = self.find_int_by_ip(ip=ip)
-            return self.find_mac_by_int([interface])[0]
-        except IndexError:
-            return ""
+        interface = self.find_int_by_ip(ip=ip)
+        return self.find_mac_by_int([interface])[0]
