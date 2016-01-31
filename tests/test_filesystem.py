@@ -35,6 +35,9 @@ class TestFilesystem(object):
         'rm -rf /dir/to/remove': (0, '', ''),
         'cat %s' % "/tmp/file": (0, 'data', ''),
         'chmod +x /tmp/hello.sh': (0, '', ''),
+        'mkdir /dir/to/remove': (0, '', ''),
+        'chown 0:0 /dir/to/remove': (0, '', ''),
+        'chmod 600 /dir/to/remove': (0, '', '')
     }
     files = {}
 
@@ -84,3 +87,12 @@ class TestFilesystem(object):
         path = '/tmp/hello.sh'
         self.get_host().fs.create_script(data, path)
         assert self.files[path].data == data
+
+    def test_mkdir_positive(self):
+        assert self.get_host().fs.mkdir('/dir/to/remove')
+
+    def test_chown_positive(self):
+        assert self.get_host().fs.chown('/dir/to/remove', 'root', 'root')
+
+    def test_chmod_positive(self):
+        assert self.get_host().fs.chmod('/dir/to/remove', '600')
