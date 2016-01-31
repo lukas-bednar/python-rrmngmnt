@@ -285,9 +285,9 @@ class Network(Service):
         """
         bridge = self.get_bridge(bridge)
         try:
-            # FIXME: I think it is not correct implemetation
+            # FIXME: I think it is not correct implementation
             # what if there are more interfaces, what to do then?
-            # I left it like this in order to preseve method-interface
+            # I left it like this in order to preserve method-interface
             return bridge['interfaces'][0]
         except IndexError:
             return None
@@ -545,3 +545,15 @@ class Network(Service):
             logger.error(e)
             return False
         return True
+
+    def get_mac_by_ip(self, ip):
+        """
+        Get mac address by ip address
+
+        :param ip: ip address
+        :type ip: str
+        :return: mac address
+        :rtype: str
+        """
+        interface = self.find_int_by_ip(ip=ip)
+        return self.find_mac_by_int([interface])[0]

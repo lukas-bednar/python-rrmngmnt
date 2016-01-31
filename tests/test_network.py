@@ -132,7 +132,12 @@ class TestNetwork(object):
                 ]
             ),
             '',
-        )
+        ),
+        "ethtool -P enp5s0f0": (
+            0,
+            "Permanent address: 44:1e:a1:73:3c:98",
+            ''
+        ),
     }
     files = {
     }
@@ -182,6 +187,10 @@ class TestNetwork(object):
     def test_all_interfaces(self):
         expected = ['enp4s0f0', 'enp4s0f1', 'enp5s0f0', 'enp5s0f']
         assert get_host().network.all_interfaces() == expected
+
+    def test_get_mac_address_by_ip(self):
+        expected = "44:1e:a1:73:3c:98"
+        assert get_host().network.get_mac_by_ip("10.11.12.83") == expected
 
 
 class TestHostNameCtl(object):
