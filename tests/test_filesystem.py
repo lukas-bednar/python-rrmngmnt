@@ -25,6 +25,9 @@ class TestFilesystem(object):
             1, '', 'rm: cannot remove ‘.tox/’: Is a directory',
         ),
         'rm -rf /dir/to/remove': (0, '', ''),
+        'mkdir /dir/to/remove': (0, '', ''),
+        'chown 0:0 /dir/to/remove': (0, '', ''),
+        'chmod 600 /dir/to/remove': (0, '', '')
     }
 
     @classmethod
@@ -64,3 +67,12 @@ class TestFilesystem(object):
     def test_rmdir_negative(self):
         with pytest.raises(ValueError):
             self.get_host().fs.rmdir('/')
+
+    def test_mkdir_positive(self):
+        assert self.get_host().fs.mkdir('/dir/to/remove')
+
+    def test_chown_positive(self):
+        assert self.get_host().fs.chown('/dir/to/remove', 'root', 'root')
+
+    def test_chmod_positive(self):
+        assert self.get_host().fs.chmod('/dir/to/remove', '600')
