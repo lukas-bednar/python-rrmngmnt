@@ -65,7 +65,7 @@ class FileSystem(Service):
         :return: True, if action succeed, otherwise False
         :rtype: bool
         """
-        return self.host.executor().run_cmd(
+        return self.host.run_command(
             ['mkdir', path]
         )[0] == 0
 
@@ -85,7 +85,7 @@ class FileSystem(Service):
         uid, gid = (
             pwd.getpwnam(owner).pw_uid for owner in (username, groupname)
         )
-        return self.host.executor().run_cmd(
+        return self.host.run_command(
             ['chown', '%s:%s' % (uid, gid), path]
         )[0] == 0
 
@@ -95,11 +95,11 @@ class FileSystem(Service):
 
         :param path: file or directory path
         :type path: str
-        :param mode: permission mode(600 for example)
+        :param mode: permission mode(600 for example or u+x)
         :type mode: str
         :return: True, if action succeed, otherwise False
         :rtype: bool
         """
-        return self.host.executor().run_cmd(
+        return self.host.run_command(
             ['chmod', mode, path]
         )[0] == 0
