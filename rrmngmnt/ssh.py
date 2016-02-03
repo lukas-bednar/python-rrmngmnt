@@ -5,11 +5,10 @@ import contextlib
 import subprocess
 from rrmngmnt.executor import Executor
 
-SSH_DIR_PATH = os.path.expanduser("~/.ssh")
-AUTHORIZED_KEYS = os.path.join(SSH_DIR_PATH, "authorized_keys")
-KNOWN_HOSTS = os.path.join(SSH_DIR_PATH, "known_hosts")
-ID_RSA_PUB = os.path.join(SSH_DIR_PATH, "id_rsa.pub")
-ID_RSA_PRV = os.path.join(SSH_DIR_PATH, "id_rsa")
+AUTHORIZED_KEYS = os.path.join("%s", ".ssh/authorized_keys")
+KNOWN_HOSTS = os.path.join("%s", ".ssh/known_hosts")
+ID_RSA_PUB = os.path.join("%s", ".ssh/id_rsa.pub")
+ID_RSA_PRV = os.path.join("%s", ".ssh/id_rsa")
 
 
 class RemoteExecutor(Executor):
@@ -56,7 +55,9 @@ class RemoteExecutor(Executor):
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if use_pkey:
                 self.pkey = paramiko.RSAKey.from_private_key_file(
-                    ID_RSA_PRV
+                    ID_RSA_PRV % os.path.expanduser(
+                        "~%s" % self._executor.user.name
+                    )
                 )
                 self._executor.user.password = None
             else:

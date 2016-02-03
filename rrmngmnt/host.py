@@ -112,17 +112,28 @@ class Host(Resource):
             user = copy.copy(self.root_user)
         return ssh.RemoteExecutor(user, self.ip, use_pkey=pkey)
 
-    def run_command(self, command):
+    def run_command(
+        self, command, input_=None, tcp_timeout=None, io_timeout=None
+    ):
         """
         Run command on host
 
-        :param command: command to run
+        :param command: command
         :type command: list
+        :param input_: input data
+        :type input_: str
+        :param tcp_timeout: tcp timeout
+        :type tcp_timeout: float
+        :param io_timeout: timeout for data operation (read/write)
+        :type io_timeout: float
         :return: tuple of (rc, out, err)
         :rtype: tuple
         """
         self.logger.info("Executing command %s", ' '.join(command))
-        rc, out, err = self.executor().run_cmd(command)
+        rc, out, err = self.executor().run_cmd(
+            command, input_=input_, tcp_timeout=tcp_timeout,
+            io_timeout=io_timeout
+        )
         if rc:
             self.logger.error(
                 "Failed to run command %s ERR: %s OUT: %s", command, err, out
@@ -201,17 +212,24 @@ class Host(Resource):
         :return: SSH public key
         :rtype: str
         """
-        if not self.fs.exists(ssh.ID_RSA_PUB):
+        id_rsa_pub = ssh.ID_RSA_PUB % os.path.expanduser(
+            "~%s" % self.users[0].name
+        )
+        id_rsa_prv = ssh.ID_RSA_PRV % os.path.expanduser(
+            "~%s" % self.users[0].name
+        )
+        if not self.fs.exists(id_rsa_pub):
             # Generating SSH key if not exist
             cmd = [
-                "ssh-keygen", "-q", "-t", "rsa", "-N", '', "-f", ssh.ID_RSA_PRV
+                "ssh-keygen", "-q", "-t", "rsa", "-N", '', "-f",
+                id_rsa_prv
             ]
-            rc = self.executor().run_cmd(cmd)[0]
+            rc = self.run_command(cmd)[0]
             if rc:
                 return ""
 
-        cmd = ["cat", ssh.ID_RSA_PUB]
-        return self.executor().run_cmd(cmd)[1]
+        cmd = ["cat", id_rsa_pub]
+        return self.run_command(cmd)[1]
 
     def remove_remote_host_ssh_key(self, remote_host):
         """
@@ -222,11 +240,14 @@ class Host(Resource):
         :return: True/False
         :rtype: bool
         """
+        known_hosts = ssh.KNOWN_HOSTS % os.path.expanduser(
+            "~%s" % self.users[0].name
+        )
         ssh_keygen = ["ssh-keygen", "-R"]
-        if self.fs.exists(ssh.KNOWN_HOSTS):
+        if self.fs.exists(known_hosts):
             # Remove old keys from local host if any
             for i in [remote_host.ip, remote_host.fqdn]:
-                rc = self.executor().run_cmd(ssh_keygen + [i])[0]
+                rc = self.run_command(ssh_keygen + [i])[0]
                 if rc:
                     return False
         return True
@@ -238,9 +259,12 @@ class Host(Resource):
         :return: True/False
         :rtype: bool
         """
+        authorized_keys = ssh.AUTHORIZED_KEYS % os.path.expanduser(
+            "~%s" % self.users[0].name
+        )
         local_fqdn = self.fqdn
-        cmd = ["sed", "-c", "-i", "/%s/d" % local_fqdn, ssh.AUTHORIZED_KEYS]
-        rc = self.executor().run_cmd(cmd)[0]
+        cmd = ["sed", "-c", "-i", "/%s/d" % local_fqdn, authorized_keys]
+        rc = self.run_command(cmd)[0]
         if rc:
             return False
         return True
@@ -261,7 +285,7 @@ class Host(Resource):
             "python", "-c",
             "import platform;print ','.join(platform.linux_distribution())"
             ]
-        rc, out, _ = self.executor().run_cmd(cmd)
+        rc, out, _ = self.run_command(cmd)
         if rc:
             return dict([(x, None) for x in values])
         return dict(zip(values, [i.strip() for i in out.split(",")]))
@@ -337,7 +361,7 @@ class Host(Resource):
         """
         ret = False
         try:
-            self.executor().run_cmd(['true'], tcp_timeout=tcp_timeout)
+            self.run_command(['true'], tcp_timeout=tcp_timeout)
             ret = True
         except (socket.error, socket.timeout):
             ret = False
