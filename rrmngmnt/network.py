@@ -557,3 +557,29 @@ class Network(Service):
         """
         interface = self.find_int_by_ip(ip=ip)
         return self.find_mac_by_int([interface])[0]
+
+    def if_up(self, nic):
+        """
+        Set nic up
+
+        :param nic: NIC name
+        :type nic: str
+        :return: True if setting NIC up succeeded, False otherwise
+        :rtype: bool
+        """
+        cmd = "ip link set up %s" % nic
+        rc, _, _ = self.host.run_command(shlex.split(cmd))
+        return not bool(rc)
+
+    def if_down(self, nic):
+        """
+        Set nic down
+
+        :param nic: NIC name
+        :type nic: str
+        :return: True if setting NIC down succeeded, False otherwise
+        :rtype: bool
+        """
+        cmd = "ip link set down %s" % nic
+        rc, _, _ = self.host.run_command(shlex.split(cmd))
+        return not bool(rc)

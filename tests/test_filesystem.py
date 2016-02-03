@@ -25,6 +25,7 @@ class TestFilesystem(object):
             1, '', 'rm: cannot remove ‘.tox/’: Is a directory',
         ),
         'rm -rf /dir/to/remove': (0, '', ''),
+        'cat %s' % "/tmp/file": ('', 'data', ''),
     }
 
     @classmethod
@@ -64,3 +65,6 @@ class TestFilesystem(object):
     def test_rmdir_negative(self):
         with pytest.raises(ValueError):
             self.get_host().fs.rmdir('/')
+
+    def test_read_file(self):
+        assert self.get_host().fs.read_file("/tmp/file") == "data"
