@@ -53,6 +53,7 @@ class Host(Resource):
             ip = fqdn2ip(ip)
         self.ip = ip
         self.users = list()
+        self._executor_user = None
         self._service_provider = service_provider
         self._package_manager = PackageManagerProxy(self)
         self.add()  # adding host to inventory
@@ -93,11 +94,52 @@ class Host(Resource):
 
     def get_user(self, name):
         for user in self.users:
-            if user.name == name:
+            if user.get_full_name() == name:
                 return user
         raise Exception(
             "User '%s' is not assoiated with host %s" % (name, self)
         )
+
+    def add_user(self, user):
+        """
+        Adds user to users collection, and tries remove duplicities.
+
+        :param user: user to add
+        :type user: instance of rrmngmnt.User
+        """
+        for u in self.users[:]:
+            if user.get_full_name() == u.get_full_name():
+                self.users.remove(u)
+        self.users.append(user)
+
+    def _set_executor_user(self, user):
+        """
+        This method explicitly set user which is used to execute commands
+        on host.
+        And adds user into users collection.
+
+        :param user: specific user
+        :type user: instance of rrmngmnt.User
+        """
+        self._executor_user = user
+        self.add_user(user)
+
+    def _get_executor_user(self):
+        """
+        The user which is supposed to be used for command execution.
+
+        :return: user
+        :rtype: instance of rrmngmnt.User
+        """
+        if self._executor_user:
+            return copy.copy(self._executor_user)
+        return copy.copy(self.root_user)
+
+    executor_user = property(_get_executor_user, _set_executor_user)
+    """
+    You can set or get the user which is used to execute commands.
+    For more info see _set_executor_user and _get_executor_user.
+    """
 
     @property
     def root_user(self):
@@ -108,12 +150,20 @@ class Host(Resource):
         return self._package_manager
 
     def executor(self, user=None, pkey=False):
+        """
+        Gives you executor to allowing command execution
+
+        :param user: the executed commands will be executed under this user.
+                     when it is None, the default executor user is used,
+                     see set_executor_user method for more info.
+        """
         if user is None:
-            user = copy.copy(self.root_user)
+            user = self.executor_user
         return ssh.RemoteExecutor(user, self.ip, use_pkey=pkey)
 
     def run_command(
-        self, command, input_=None, tcp_timeout=None, io_timeout=None
+        self, command, input_=None, tcp_timeout=None, io_timeout=None,
+        user=None, pkey=False,
     ):
         """
         Run command on host
@@ -130,7 +180,7 @@ class Host(Resource):
         :rtype: tuple
         """
         self.logger.info("Executing command %s", ' '.join(command))
-        rc, out, err = self.executor().run_cmd(
+        rc, out, err = self.executor(user=user, pkey=pkey).run_cmd(
             command, input_=input_, tcp_timeout=tcp_timeout,
             io_timeout=io_timeout
         )
@@ -205,18 +255,22 @@ class Host(Resource):
             self._service_provider = service.__class__
             return service
 
-    def get_ssh_public_key(self):
+    def get_ssh_public_key(self, user=None):
         """
         Get SSH public key
 
+        :param user: what user to get ssh keys for, default is root
+        :type user: instance of rrmngmnt.User
         :return: SSH public key
         :rtype: str
         """
+        if user is None:
+            user = copy.copy(self.root_user)
         id_rsa_pub = ssh.ID_RSA_PUB % os.path.expanduser(
-            "~%s" % self.users[0].name
+            "~%s" % user.name
         )
         id_rsa_prv = ssh.ID_RSA_PRV % os.path.expanduser(
-            "~%s" % self.users[0].name
+            "~%s" % user.name
         )
         if not self.fs.exists(id_rsa_pub):
             # Generating SSH key if not exist
@@ -231,17 +285,21 @@ class Host(Resource):
         cmd = ["cat", id_rsa_pub]
         return self.run_command(cmd)[1]
 
-    def remove_remote_host_ssh_key(self, remote_host):
+    def remove_remote_host_ssh_key(self, remote_host, user=None):
         """
         Remove remote host keys (ip, fqdn) from KNOWN_HOSTS file
 
         :param remote_host: Remote host resource object
         :type remote_host: Host
+        :param user: what user to remove ssh keys for, default is root
+        :type user: instance of rrmngmnt.User
         :return: True/False
         :rtype: bool
         """
+        if user is None:
+            user = copy.copy(self.root_user)
         known_hosts = ssh.KNOWN_HOSTS % os.path.expanduser(
-            "~%s" % self.users[0].name
+            "~%s" % user.name
         )
         ssh_keygen = ["ssh-keygen", "-R"]
         if self.fs.exists(known_hosts):
@@ -252,15 +310,19 @@ class Host(Resource):
                     return False
         return True
 
-    def remove_remote_key_from_authorized_keys(self):
+    def remove_remote_key_from_authorized_keys(self, user=None):
         """
         Remove remote ssh key from AUTHORIZED_KEYS file
 
+        :param user: what user to remove from authorized_keys, default is root
+        :type user: instance of rrmngmnt.User
         :return: True/False
         :rtype: bool
         """
+        if user is None:
+            user = copy.copy(self.root_user)
         authorized_keys = ssh.AUTHORIZED_KEYS % os.path.expanduser(
-            "~%s" % self.users[0].name
+            "~%s" % user.name
         )
         local_fqdn = self.fqdn
         cmd = ["sed", "-c", "-i", "/%s/d" % local_fqdn, authorized_keys]
