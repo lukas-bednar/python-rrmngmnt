@@ -55,9 +55,7 @@ class RemoteExecutor(Executor):
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if use_pkey:
                 self.pkey = paramiko.RSAKey.from_private_key_file(
-                    ID_RSA_PRV % os.path.expanduser(
-                        "~%s" % self._executor.user.name
-                    )
+                    ID_RSA_PRV % os.path.expanduser('~')
                 )
                 self._executor.user.password = None
             else:
