@@ -36,7 +36,7 @@ class TestFilesystem(object):
         'cat %s' % "/tmp/file": (0, 'data', ''),
         'chmod +x /tmp/hello.sh': (0, '', ''),
         'mkdir /dir/to/remove': (0, '', ''),
-        'chown 0:0 /dir/to/remove': (0, '', ''),
+        'chown root:root /dir/to/remove': (0, '', ''),
         'chmod 600 /dir/to/remove': (0, '', '')
     }
     files = {}

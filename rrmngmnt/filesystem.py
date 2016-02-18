@@ -116,11 +116,8 @@ class FileSystem(Service):
         :return: True, if action succeed, otherwise False
         :rtype: bool
         """
-        uid, gid = (
-            pwd.getpwnam(owner).pw_uid for owner in (username, groupname)
-        )
         return self.host.run_command(
-            ['chown', '%s:%s' % (uid, gid), path]
+            ['chown', '%s:%s' % (username, groupname), path]
         )[0] == 0
 
     def chmod(self, path, mode):
