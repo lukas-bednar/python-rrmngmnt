@@ -4,6 +4,13 @@ from .common import FakeExecutor
 import pytest
 
 
+host_executor = Host.executor
+
+
+def teardown_module():
+    Host.executor = host_executor
+
+
 def fake_cmd_data(cmd_to_data):
     def executor(self, user=None):
         e = FakeExecutor(user)
