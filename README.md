@@ -36,23 +36,43 @@ print h.network.list_bridges()
 ```
 
 ### Package Management
-Implements APT, YUM, DNF and RPM package managements. It is able to determine
+It encapsulates various package managements. It is able to determine
 which package management to use. You can still specify package management
 explicitly.
+
+Implemented managements:
+
+  * APT
+  * YUM
+  * DNF
+  * RPM
+
 ```
+# install htop package using implicit management
 h.package_management.install('htop')
+# remove htop package using rpm explicitly
 h.package_management('rpm').remove('htop')
 ```
 
 ### System Services
-You can toggle system services, it implements Systemd, SysVinit and InitCtl.
+You can toggle system services, it encapsulates various service managements.
 It is able to determine which service management to use in most cases.
+
+Implemented managements:
+
+  * Systemd
+  * SysVinit
+  * InitCtl
+
 ```
 if h.service('httpd').status():
     h.service('httpd').stop()
 if h.service('httpd').is_enabled():
     h.service('httpd').disable()
 ```
+
+### Storage Management
+It is in PROGRESS state. Planed are NFS & LVM services.
 
 ## Requires
 * paramiko
