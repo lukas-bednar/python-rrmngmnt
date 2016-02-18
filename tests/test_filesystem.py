@@ -26,7 +26,7 @@ class TestFilesystem(object):
         ),
         'rm -rf /dir/to/remove': (0, '', ''),
         'mkdir /dir/to/remove': (0, '', ''),
-        'chown 0:0 /dir/to/remove': (0, '', ''),
+        'chown root:root /dir/to/remove': (0, '', ''),
         'chmod 600 /dir/to/remove': (0, '', '')
     }
 
