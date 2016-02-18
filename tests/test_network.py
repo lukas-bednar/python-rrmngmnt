@@ -145,6 +145,8 @@ class TestNetwork(object):
             "Permanent address: 44:1e:a1:73:3c:98",
             ''
         ),
+        'ip link set up interface': True,
+        'ip link set down interface': True,
     }
     files = {
     }
@@ -198,6 +200,12 @@ class TestNetwork(object):
     def test_get_mac_address_by_ip(self):
         expected = "44:1e:a1:73:3c:98"
         assert get_host().network.get_mac_by_ip("10.11.12.83") == expected
+
+    def if_up(self):
+        assert get_host().network.if_up("interface")
+
+    def if_down(self):
+        assert get_host().network.if_down("interface")
 
 
 class TestHostNameCtl(object):

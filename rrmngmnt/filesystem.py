@@ -54,3 +54,16 @@ class FileSystem(Service):
         """
         full_path = os.path.join(path, file_name)
         return self.host.run_command(['touch', full_path])[0] == 0
+
+    def read_file(self, path):
+        """
+        Reads a content of a file in a given path
+
+        :param path: The path from where to take a content from
+        :type path: str
+        :return: Content of a file
+        :rtype: str
+        """
+        cmd = ["cat", path]
+        rc, out, _ = self.host.run_command(cmd)
+        return out if not rc else ""
