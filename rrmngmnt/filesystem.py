@@ -1,5 +1,6 @@
 import os
 from rrmngmnt.service import Service
+from rrmngmnt import errors
 
 
 class FileSystem(Service):
@@ -67,3 +68,24 @@ class FileSystem(Service):
         cmd = ["cat", path]
         rc, out, _ = self.host.run_command(cmd)
         return out if not rc else ""
+
+    def create_script(self, content, path):
+        """
+        Create script on filesystem, and make it executable.
+
+        :param content: content of the script
+        :type content: str
+        :param path: path to script to create
+        :type path: str
+        :raises: CommandExecutionFailure when can not change permissions
+        """
+        executor = self.host.executor()
+        with executor.session() as session:
+            with session.open_file(path, 'wb') as fh:
+                fh.write(content)
+            cmd = ["chmod", "+x", path]
+            rc, _, err = session.run_cmd(cmd)
+            if rc:
+                raise errors.CommandExecutionFailure(
+                    executor, cmd, rc, err,
+                )

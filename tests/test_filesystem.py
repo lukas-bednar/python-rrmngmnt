@@ -11,10 +11,11 @@ def teardown_module():
     Host.executor = host_executor
 
 
-def fake_cmd_data(cmd_to_data):
+def fake_cmd_data(cmd_to_data, files):
     def executor(self, user=None, pkey=False):
         e = FakeExecutor(user)
         e.cmd_to_data = cmd_to_data.copy()
+        e.files_content = files
         return e
     Host.executor = executor
 
@@ -32,12 +33,14 @@ class TestFilesystem(object):
             1, '', 'rm: cannot remove ‘.tox/’: Is a directory',
         ),
         'rm -rf /dir/to/remove': (0, '', ''),
-        'cat %s' % "/tmp/file": ('', 'data', ''),
+        'cat %s' % "/tmp/file": (0, 'data', ''),
+        'chmod +x /tmp/hello.sh': (0, '', ''),
     }
+    files = {}
 
     @classmethod
     def setup_class(cls):
-        fake_cmd_data(cls.data)
+        fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
         return Host(ip)
@@ -75,3 +78,9 @@ class TestFilesystem(object):
 
     def test_read_file(self):
         assert self.get_host().fs.read_file("/tmp/file") == "data"
+
+    def test_create_sctript(self):
+        data = "echo hello"
+        path = '/tmp/hello.sh'
+        self.get_host().fs.create_script(data, path)
+        assert self.files[path].data == data
