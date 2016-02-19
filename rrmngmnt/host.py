@@ -1,3 +1,8 @@
+"""
+This module define resource Host which is entry point to various services.
+It should hold methods / properties which returns you Instance of specific
+Service hosted on that Host.
+"""
 import os
 import socket
 import netaddr
