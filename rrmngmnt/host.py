@@ -4,19 +4,18 @@ It should hold methods / properties which returns you Instance of specific
 Service hosted on that Host.
 """
 import os
+import copy
 import socket
 import netaddr
-import copy
-import warnings
-from rrmngmnt import errors
-from rrmngmnt.common import fqdn2ip
-from rrmngmnt.resource import Resource
-from rrmngmnt.service import Systemd, SysVinit, InitCtl
-from rrmngmnt.network import Network
-from rrmngmnt.filesystem import FileSystem
-from rrmngmnt.package_manager import PackageManagerProxy
 from rrmngmnt import ssh
+from rrmngmnt.common import fqdn2ip
+from rrmngmnt.network import Network
 from rrmngmnt.storage import NFSService, LVMService
+from rrmngmnt.service import Systemd, SysVinit, InitCtl
+from rrmngmnt.resource import Resource
+from rrmngmnt.filesystem import FileSystem
+from rrmngmnt.power_manager import PowerManagerProxy
+from rrmngmnt.package_manager import PackageManagerProxy
 
 
 class Host(Resource):
@@ -62,6 +61,7 @@ class Host(Resource):
         self.users = list()
         self._executor_user = None
         self._service_provider = service_provider
+        self._power_manager = PowerManagerProxy(self)
         self._package_manager = PackageManagerProxy(self)
         self.add()  # adding host to inventory
 
@@ -155,6 +155,10 @@ class Host(Resource):
     @property
     def package_manager(self):
         return self._package_manager
+
+    @property
+    def power_manager(self):
+        return self._power_manager
 
     def executor(self, user=None, pkey=False):
         """
