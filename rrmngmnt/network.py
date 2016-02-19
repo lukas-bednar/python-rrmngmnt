@@ -1,6 +1,8 @@
 import re
 import os
+import time
 import shlex
+import socket
 import logging
 import netaddr
 import functools
@@ -9,6 +11,9 @@ from rrmngmnt.service import Service
 logger = logging.getLogger(__name__)
 
 IFCFG_PATH = "/etc/sysconfig/network-scripts/"
+
+SSH_CONNECTIVITY_TIMEOUT = 600
+SSH_CONNECTIVITY_SAMPLE_TIME = 20
 
 
 class _session(object):
@@ -583,3 +588,55 @@ class Network(Service):
         cmd = "ip link set down %s" % nic
         rc, _, _ = self.host.run_command(shlex.split(cmd))
         return not bool(rc)
+
+    def is_ssh_connective(self, tcp_timeout=20.0):
+        """
+        Check if host is connective via ssh
+
+        :param tcp_timeout: time to wait for response
+        :type tcp_timeout: float
+        :return: True if host is connective, False otherwise
+        :rtype: bool
+        """
+        try:
+            self.logger.info(
+                "Check if host %s is connective via ssh", self.host.fqdn
+            )
+            self.host.run_command(['true'], tcp_timeout=tcp_timeout)
+            return True
+        except (socket.timeout, socket.error) as e:
+            self.logger.debug("Socket error: %s", e)
+        except Exception as e:
+            self.logger.debug("SSH exception: %s", e)
+        return False
+
+    def wait_for_ssh_connectivity_state(
+        self, positive,
+        timeout=SSH_CONNECTIVITY_TIMEOUT,
+        sample_time=SSH_CONNECTIVITY_SAMPLE_TIME
+    ):
+        """
+        Wait until host will be connective or not via ssh
+
+        :param positive: wait for the positive or negative connective state
+        :type positive: bool
+        :param timeout: wait timeout
+        :type timeout: int
+        :param sample_time: sample the ssh each sample_time seconds
+        :type sample_time: int
+        :return: True, if positive and ssh is connective or
+        negative and ssh does not connective, otherwise False
+        :rtype: bool
+        """
+        reachable = "unreachable" if positive else "reachable"
+        timeout_counter = 0
+        while self.is_ssh_connective() != positive:
+            if timeout_counter > timeout:
+                self.logger.error(
+                    "Host %s is still %s via ssh, after %s seconds",
+                    self.host.fqdn, reachable, timeout
+                )
+                return False
+            time.sleep(sample_time)
+            timeout_counter += sample_time
+        return True

@@ -412,24 +412,3 @@ class Host(Resource):
         except errors.CommandExecutionFailure:
             return ""
         return dst
-
-    def is_connective(self, tcp_timeout=20.0):
-        """
-        Check if host is connective via ssh
-
-        :param tcp_timeout: time to wait for response
-        :type tcp_timeout: float
-        :return: True if host is connective, False otherwise
-        :rtype: bool
-        """
-        ret = False
-        try:
-            self.run_command(['true'], tcp_timeout=tcp_timeout)
-            ret = True
-        except (socket.error, socket.timeout):
-            ret = False
-        except Exception:
-            self.logger.warning("Unexpected exception", exc_info=True)
-            ret = False
-
-        return ret
