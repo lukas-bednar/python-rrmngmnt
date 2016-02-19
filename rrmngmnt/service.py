@@ -2,6 +2,24 @@ from rrmngmnt.resource import Resource
 
 
 class Service(Resource):
+    """
+    General service provided by Host.
+    """
+
+    class LoggerAdapter(Resource.LoggerAdapter):
+        """
+        Makes sure that all logs made in this class, has appropriate prefix:
+        [IP]
+        """
+        def process(self, msg, kwargs):
+            return (
+                "[%s] %s" % (
+                    self.extra['self'].host.ip,
+                    msg,
+                ),
+                kwargs,
+            )
+
     def __init__(self, host):
         super(Service, self).__init__()
         self.host = host
