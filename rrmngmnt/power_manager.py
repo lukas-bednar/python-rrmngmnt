@@ -13,6 +13,7 @@ class PowerManager(Service):
     reboot_command = None
     poweron_command = None
     poweroff_command = None
+    status_command = None
 
     def _exec_pm_command(self, command, *args):
         raise NotImplementedError("Must be implemented under child class")
@@ -35,6 +36,12 @@ class PowerManager(Service):
         """
         self._exec_pm_command(self.poweron_command, *args)
 
+    def status(self, *args):
+        """
+        Get host power status
+        """
+        self._exec_pm_command(self.status_command, *args)
+
 
 class SSHPowerManager(PowerManager):
     """
@@ -56,8 +63,17 @@ class SSHPowerManager(PowerManager):
         """
         Power on host
         """
-        raise RuntimeError(
+        raise NotImplementedError(
             "Not possible to power on host via ssh, "
+            "please use ipmi power management"
+        )
+
+    def status(self, *args):
+        """
+        Get host power status
+        """
+        raise NotImplementedError(
+            "Not possible to get host power status via ssh, "
             "please use ipmi power management"
         )
 
@@ -67,6 +83,7 @@ class IPMIPowerManager(PowerManager):
     IPMI power management class
     """
     reboot_command = ["reset"]
+    status_command = ["status"]
     poweron_command = ["on"]
     poweroff_command = ["off"]
 
