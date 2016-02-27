@@ -11,13 +11,13 @@ import warnings
 
 from rrmngmnt import ssh
 from rrmngmnt import errors
+from rrmngmnt import power_manager
 from rrmngmnt.common import fqdn2ip
 from rrmngmnt.network import Network
 from rrmngmnt.storage import NFSService, LVMService
 from rrmngmnt.service import Systemd, SysVinit, InitCtl
 from rrmngmnt.resource import Resource
 from rrmngmnt.filesystem import FileSystem
-from rrmngmnt.power_manager import PowerManagerProxy
 from rrmngmnt.package_manager import PackageManagerProxy
 
 
@@ -63,8 +63,8 @@ class Host(Resource):
         self.ip = ip
         self.users = list()
         self._executor_user = None
+        self._power_managers = dict()
         self._service_provider = service_provider
-        self._power_manager = PowerManagerProxy(self)
         self._package_manager = PackageManagerProxy(self)
         self.add()  # adding host to inventory
 
@@ -101,6 +101,41 @@ class Host(Resource):
     @property
     def fqdn(self):
         return socket.getfqdn(self.ip)
+
+    def add_power_manager(self, pm_type, **init_params):
+        """
+        Add power power manager to host
+
+        :param pm_type: power manager type(power_manager.SSH_TYPE for example)
+        :type pm_type: str
+        :param init_params: power manager init parameters
+        :type init_params: dict
+        """
+        self._power_managers[pm_type] = getattr(
+            power_manager, power_manager.MANAGERS[pm_type]
+        )(self, **init_params)
+
+    def get_power_manager(self, pm_type=None):
+        """
+        Get host power manager
+
+        :param pm_type: power manager type(power_manager.SSH_TYPE for example)
+        :type pm_type: str
+        :return: instance of PowerManager
+        :rtype: PowerManager
+        :raise: Exception
+        """
+        if self._power_managers:
+            if pm_type:
+                if pm_type in self._power_managers:
+                    return self._power_managers[pm_type]
+                raise Exception(
+                    "PM with type '%s' is not associated with the host %s" %
+                    (pm_type, self)
+                )
+            else:
+                return self._power_managers.values()[0]
+        raise Exception("No PM is associated with the host %s" % self)
 
     def get_user(self, name):
         for user in self.users:
@@ -161,7 +196,7 @@ class Host(Resource):
 
     @property
     def power_manager(self):
-        return self._power_manager
+        return self.get_power_manager()
 
     def executor(self, user=None, pkey=False):
         """

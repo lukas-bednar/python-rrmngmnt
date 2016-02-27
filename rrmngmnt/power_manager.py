@@ -5,6 +5,14 @@ import socket
 import subprocess
 from rrmngmnt.service import Service
 
+SSH_TYPE = "ssh"
+IPMI_TYPE = "ipmi"
+
+MANAGERS = {
+    SSH_TYPE: "SSHPowerManager",
+    IPMI_TYPE: "IPMIPowerManager"
+}
+
 
 class PowerManager(Service):
     """
@@ -52,12 +60,19 @@ class SSHPowerManager(PowerManager):
 
     def _exec_pm_command(self, command, *args):
         try:
-            command += args
-            self.host.executor().run_cmd(command)
+            t_command = list(command)
+            t_command += args
+            self.host.executor().run_cmd(t_command)
         except socket.timeout as e:
             self.logger.debug("Socket timeout: %s", e)
         except Exception as e:
             self.logger.debug("SSH exception: %s", e)
+
+    def status(self, *args):
+        """
+        Get host power status
+        """
+        self.host.executor().run_cmd(['true'], tcp_timeout=5)
 
     def poweron(self, *args):
         """
@@ -65,15 +80,6 @@ class SSHPowerManager(PowerManager):
         """
         raise NotImplementedError(
             "Not possible to power on host via ssh, "
-            "please use ipmi power management"
-        )
-
-    def status(self, *args):
-        """
-        Get host power status
-        """
-        raise NotImplementedError(
-            "Not possible to get host power status via ssh, "
             "please use ipmi power management"
         )
 
@@ -87,7 +93,7 @@ class IPMIPowerManager(PowerManager):
     poweron_command = ["on"]
     poweroff_command = ["off"]
 
-    def __init__(self, h, pm_if_type, pm_address, pm_user, pm_password):
+    def __init__(self, h, pm_if_type, pm_address, user):
         """
         Initialize IPMIPowerManagement instance
 
@@ -95,16 +101,14 @@ class IPMIPowerManager(PowerManager):
         :type pm_if_type: str
         :param pm_address: power management address
         :type pm_address: str
-        :param pm_user: power management user
-        :type pm_user: str
-        :param pm_password: power management password
-        :type pm_password: str
+        :param user: instance of User with pm username and password
+        :type user: User
         """
         super(IPMIPowerManager, self).__init__(h)
         self.pm_if_type = pm_if_type
         self.pm_address = pm_address
-        self.pm_user = pm_user
-        self.pm_password = pm_password
+        self.pm_user = user.name
+        self.pm_password = user.password
         self.binary = [
             "ipmitool",
             "-I", self.pm_if_type,
@@ -115,32 +119,7 @@ class IPMIPowerManager(PowerManager):
         ]
 
     def _exec_pm_command(self, command, *args):
-        command = self.binary + command
-        command += args
-        subprocess.call(command)
-
-
-class PowerManagerProxy(Service):
-    """
-    This class helps to determine proper power manager for the target system
-    """
-    managers = {
-        "ipmi": IPMIPowerManager,
-        "ssh": SSHPowerManager,
-    }
-    order = ("ipmi", "ssh")
-
-    def __init__(self, h):
-        super(PowerManagerProxy, self).__init__(h)
-        self._manager = None
-
-    def __call__(self, name):
-        """
-        This method allows you pick up specific power manager.
-
-        power_manager = host.power_manager('ipmi')(init_params).restart()
-        """
-        try:
-            return self.managers[name]
-        except KeyError:
-            raise ValueError("Unknown power manager: %s" % name)
+        t_command = list(command)
+        t_command = self.binary + t_command
+        t_command += args
+        subprocess.call(t_command)

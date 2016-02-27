@@ -78,6 +78,29 @@ It is in PROGRESS state. Planed are NFS & LVM services.
 * paramiko
 * netaddr
 
+### Power Management
+Give you possibility to control host power state, you can restart, poweron,
+poweroff host and get host power status.
+
+Implemented managements:
+
+  * SSH
+  * IPMI
+
+```
+ipmi_user = User(pm_user, pm_password)
+ipmi_params = {
+    'pm_if_type': 'lan',
+    'pm_address': 'test-mgmt.testdomain',
+    'user': ipmi_user
+}
+h.add_power_manager(
+    power_manager.IPMI_TYPE, **ipmi_params
+)
+# restart host via ipmitool
+h.power_manager.restart()
+```
+
 ## Install
 ```
 python setup.py devop
