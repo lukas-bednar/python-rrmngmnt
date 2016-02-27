@@ -8,6 +8,14 @@ class FileSystem(Service):
     Class for working with filesystem.
     It has same interface as 'os' module.
     """
+    def _exec_command(self, cmd):
+        host_executor = self.host.executor()
+        rc, _, err = host_executor.run_cmd(cmd)
+        if rc:
+            raise errors.CommandExecutionFailure(
+                cmd=cmd, executor=host_executor, rc=rc, err=err
+            )
+
     def _exec_file_test(self, op, path):
         return self.host.executor().run_cmd(
             ['[', '-%s' % op, path, ']']
@@ -99,9 +107,7 @@ class FileSystem(Service):
         :return: True, if action succeed, otherwise False
         :rtype: bool
         """
-        return self.host.run_command(
-            ['mkdir', path]
-        )[0] == 0
+        self._exec_command(['mkdir', path])
 
     def chown(self, path, username, groupname):
         """
@@ -116,9 +122,7 @@ class FileSystem(Service):
         :return: True, if action succeed, otherwise False
         :rtype: bool
         """
-        return self.host.run_command(
-            ['chown', '%s:%s' % (username, groupname), path]
-        )[0] == 0
+        self._exec_command(['chown', '%s:%s' % (username, groupname), path])
 
     def chmod(self, path, mode):
         """
@@ -131,6 +135,4 @@ class FileSystem(Service):
         :return: True, if action succeed, otherwise False
         :rtype: bool
         """
-        return self.host.run_command(
-            ['chmod', mode, path]
-        )[0] == 0
+        self._exec_command(['chmod', mode, path])
