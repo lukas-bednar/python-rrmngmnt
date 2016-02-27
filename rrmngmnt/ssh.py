@@ -1,4 +1,5 @@
 import os
+import time
 import socket
 import paramiko
 import contextlib
@@ -9,6 +10,8 @@ AUTHORIZED_KEYS = os.path.join("%s", ".ssh/authorized_keys")
 KNOWN_HOSTS = os.path.join("%s", ".ssh/known_hosts")
 ID_RSA_PUB = os.path.join("%s", ".ssh/id_rsa.pub")
 ID_RSA_PRV = os.path.join("%s", ".ssh/id_rsa")
+CONNECTIVITY_TIMEOUT = 600
+CONNECTIVITY_SAMPLE_TIME = 20
 
 
 class RemoteExecutor(Executor):
@@ -234,3 +237,55 @@ class RemoteExecutor(Executor):
         """
         with self.session(tcp_timeout) as session:
             return session.run_cmd(cmd, input_, io_timeout)
+
+    def is_connective(self, tcp_timeout=20.0):
+        """
+        Check if address is connective via ssh
+
+        :param tcp_timeout: time to wait for response
+        :type tcp_timeout: float
+        :return: True if address is connective, False otherwise
+        :rtype: bool
+        """
+        try:
+            self.logger.info(
+                "Check if address %s is connective via ssh", self.address
+            )
+            self.run_cmd(['true'], tcp_timeout=tcp_timeout)
+            return True
+        except (socket.timeout, socket.error) as e:
+            self.logger.debug("Socket error: %s", e)
+        except Exception as e:
+            self.logger.debug("SSH exception: %s", e)
+        return False
+
+    def wait_for_connectivity_state(
+        self, positive,
+        timeout=CONNECTIVITY_TIMEOUT,
+        sample_time=CONNECTIVITY_SAMPLE_TIME
+    ):
+        """
+        Wait until address will be connective or not via ssh
+
+        :param positive: wait for the positive or negative connective state
+        :type positive: bool
+        :param timeout: wait timeout
+        :type timeout: int
+        :param sample_time: sample the ssh each sample_time seconds
+        :type sample_time: int
+        :return: True, if positive and ssh is connective or
+        negative and ssh does not connective, otherwise False
+        :rtype: bool
+        """
+        reachable = "unreachable" if positive else "reachable"
+        timeout_counter = 0
+        while self.is_connective() != positive:
+            if timeout_counter > timeout:
+                self.logger.error(
+                    "Address %s is still %s via ssh, after %s seconds",
+                    self.address, reachable, timeout
+                )
+                return False
+            time.sleep(sample_time)
+            timeout_counter += sample_time
+        return True

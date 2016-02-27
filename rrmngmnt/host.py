@@ -424,7 +424,7 @@ class Host(Resource):
         """
         warnings.warn(
             "This method is deprecated and will be removed. "
-            "Use Host.network.is_ssh_connective instead."
+            "Use Host.executor().is_connective() instead."
         )
         try:
             self.run_command(['true'], tcp_timeout=tcp_timeout)
