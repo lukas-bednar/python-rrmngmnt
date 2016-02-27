@@ -89,10 +89,10 @@ class TestFilesystem(object):
         assert self.files[path].data == data
 
     def test_mkdir_positive(self):
-        assert self.get_host().fs.mkdir('/dir/to/remove')
+        self.get_host().fs.mkdir('/dir/to/remove')
 
     def test_chown_positive(self):
-        assert self.get_host().fs.chown('/dir/to/remove', 'root', 'root')
+        self.get_host().fs.chown('/dir/to/remove', 'root', 'root')
 
     def test_chmod_positive(self):
-        assert self.get_host().fs.chmod('/dir/to/remove', '600')
+        self.get_host().fs.chmod('/dir/to/remove', '600')
