@@ -23,6 +23,8 @@ Basic file operations, you can find there subset of python 'os' module related
 to files.
 ```
 print h.fs.exists("/path/to/file")
+h.fs.chown("/path/to/file", "root", "root")
+h.fs.chmod("/path/to/file", "644")
 h.fs.unlink("/path/to/file")
 ```
 
