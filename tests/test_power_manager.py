@@ -55,13 +55,10 @@ class TestPowerManager(object):
 
 class TestSSHPowerManager(TestPowerManager):
     @classmethod
-    def setup_class(cls):
-        super(TestSSHPowerManager, cls).setup_class()
-        cls.host.add_power_manager(pm_type=power_manager.SSH_TYPE)
-
-    @classmethod
     def get_ssh_power_manager(cls):
-        cls.host.get_power_manager(pm_type=power_manager.SSH_TYPE)
+        host = cls.get_host()
+        host.add_power_manager(pm_type=power_manager.SSH_TYPE)
+        return host.get_power_manager(pm_type=power_manager.SSH_TYPE)
 
     def test_reboot_positive(self):
         self.get_ssh_power_manager().restart()
@@ -92,19 +89,20 @@ class TestIPMIPowerManager(TestPowerManager):
     def setup_class(cls):
         super(TestIPMIPowerManager, cls).setup_class()
         cls.fake_exec_pm_command()
+
+    @classmethod
+    def get_ipmi_power_manager(cls):
         pm_user = User(name=PM_USER, password=PM_PASSWORD)
         ipmi_init_params = {
             'pm_if_type': PM_TYPE,
             'pm_address': PM_ADDRESS,
             'user': pm_user
         }
-        cls.host.add_power_manager(
+        host = cls.get_host()
+        host.add_power_manager(
             pm_type=power_manager.IPMI_TYPE, **ipmi_init_params
         )
-
-    @classmethod
-    def get_ipmi_power_manager(cls):
-        cls.host.get_power_manager(pm_type=power_manager.IPMI_TYPE)
+        return host.get_power_manager(pm_type=power_manager.IPMI_TYPE)
 
     def test_reboot_positive(self):
         self.get_ipmi_power_manager().restart()
