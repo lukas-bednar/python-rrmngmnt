@@ -249,7 +249,8 @@ class RemoteExecutor(Executor):
         """
         try:
             self.logger.info(
-                "Check if address %s is connective via ssh", self.address
+                "Check if address is connective via ssh in given timeout %s",
+                tcp_timeout
             )
             self.run_cmd(['true'], tcp_timeout=tcp_timeout)
             return True
