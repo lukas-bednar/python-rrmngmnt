@@ -422,14 +422,8 @@ class Host(Resource):
         :return: True if host is connective, False otherwise
         :rtype: bool
         """
-        ret = False
-        try:
-            self.run_command(['true'], tcp_timeout=tcp_timeout)
-            ret = True
-        except (socket.error, socket.timeout):
-            ret = False
-        except Exception:
-            self.logger.warning("Unexpected exception", exc_info=True)
-            ret = False
-
-        return ret
+        warnings.warn(
+            "This method is deprecated and will be removed. "
+            "Use Host.executor().is_connective() instead."
+        )
+        return self.executor().is_connective(tcp_timeout=tcp_timeout)
