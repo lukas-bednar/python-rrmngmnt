@@ -8,6 +8,14 @@ class FileSystem(Service):
     Class for working with filesystem.
     It has same interface as 'os' module.
     """
+    def _exec_command(self, cmd):
+        host_executor = self.host.executor()
+        rc, _, err = host_executor.run_cmd(cmd)
+        if rc:
+            raise errors.CommandExecutionFailure(
+                cmd=cmd, executor=host_executor, rc=rc, err=err
+            )
+
     def _exec_file_test(self, op, path):
         return self.host.executor().run_cmd(
             ['[', '-%s' % op, path, ']']
@@ -77,15 +85,45 @@ class FileSystem(Service):
         :type content: str
         :param path: path to script to create
         :type path: str
-        :raises: CommandExecutionFailure when can not change permissions
         """
         executor = self.host.executor()
         with executor.session() as session:
             with session.open_file(path, 'wb') as fh:
                 fh.write(content)
-            cmd = ["chmod", "+x", path]
-            rc, _, err = session.run_cmd(cmd)
-            if rc:
-                raise errors.CommandExecutionFailure(
-                    executor, cmd, rc, err,
-                )
+            self.chmod(path=path, mode="+x")
+
+    def mkdir(self, path):
+        """
+        Create directory on host
+
+        :param path: directory path
+        :type path: str
+        :raises: CommandExecutionFailure, if mkdir failed
+        """
+        self._exec_command(['mkdir', path])
+
+    def chown(self, path, username, groupname):
+        """
+        Change owner of file or directory
+
+        :param path: file or directory path
+        :type path: str
+        :param username: change user owner to username
+        :type username: str
+        :param groupname: change group owner to groupname
+        :type groupname: str
+        :raises: CommandExecutionFailure, if chown failed
+        """
+        self._exec_command(['chown', '%s:%s' % (username, groupname), path])
+
+    def chmod(self, path, mode):
+        """
+        Change permission of directory or file
+
+        :param path: file or directory path
+        :type path: str
+        :param mode: permission mode(600 for example or u+x)
+        :type mode: str
+        :raises: CommandExecutionFailure, if chmod failed
+        """
+        self._exec_command(['chmod', mode, path])

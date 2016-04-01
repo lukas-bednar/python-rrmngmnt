@@ -1,7 +1,9 @@
 # -*- coding: utf8 -*-
-from rrmngmnt import Host
-from .common import FakeExecutor
 import pytest
+
+from rrmngmnt import Host
+from rrmngmnt import errors
+from .common import FakeExecutor
 
 
 host_executor = Host.executor
@@ -35,6 +37,10 @@ class TestFilesystem(object):
         'rm -rf /dir/to/remove': (0, '', ''),
         'cat %s' % "/tmp/file": (0, 'data', ''),
         'chmod +x /tmp/hello.sh': (0, '', ''),
+        'mkdir /dir/to/remove': (0, '', ''),
+        'chown root:root /dir/to/remove': (0, '', ''),
+        'chmod 600 /dir/to/remove': (0, '', ''),
+        'chmod 600 /tmp/nofile': (1, '', ''),
     }
     files = {}
 
@@ -84,3 +90,16 @@ class TestFilesystem(object):
         path = '/tmp/hello.sh'
         self.get_host().fs.create_script(data, path)
         assert self.files[path].data == data
+
+    def test_mkdir_positive(self):
+        self.get_host().fs.mkdir('/dir/to/remove')
+
+    def test_chown_positive(self):
+        self.get_host().fs.chown('/dir/to/remove', 'root', 'root')
+
+    def test_chmod_positive(self):
+        self.get_host().fs.chmod('/dir/to/remove', '600')
+
+    def test_chmod_negative(self):
+        with pytest.raises(errors.CommandExecutionFailure):
+            self.get_host().fs.chmod('/tmp/nofile', '600')
