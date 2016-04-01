@@ -85,18 +85,12 @@ class FileSystem(Service):
         :type content: str
         :param path: path to script to create
         :type path: str
-        :raises: CommandExecutionFailure when can not change permissions
         """
         executor = self.host.executor()
         with executor.session() as session:
             with session.open_file(path, 'wb') as fh:
                 fh.write(content)
-            cmd = ["chmod", "+x", path]
-            rc, _, err = session.run_cmd(cmd)
-            if rc:
-                raise errors.CommandExecutionFailure(
-                    executor, cmd, rc, err,
-                )
+            self.chmod(path=path, mode="+x")
 
     def mkdir(self, path):
         """
@@ -104,8 +98,7 @@ class FileSystem(Service):
 
         :param path: directory path
         :type path: str
-        :return: True, if action succeed, otherwise False
-        :rtype: bool
+        :raises: CommandExecutionFailure, if mkdir failed
         """
         self._exec_command(['mkdir', path])
 
@@ -119,8 +112,7 @@ class FileSystem(Service):
         :type username: str
         :param groupname: change group owner to groupname
         :type groupname: str
-        :return: True, if action succeed, otherwise False
-        :rtype: bool
+        :raises: CommandExecutionFailure, if chown failed
         """
         self._exec_command(['chown', '%s:%s' % (username, groupname), path])
 
@@ -132,7 +124,6 @@ class FileSystem(Service):
         :type path: str
         :param mode: permission mode(600 for example or u+x)
         :type mode: str
-        :return: True, if action succeed, otherwise False
-        :rtype: bool
+        :raises: CommandExecutionFailure, if chmod failed
         """
         self._exec_command(['chmod', mode, path])
