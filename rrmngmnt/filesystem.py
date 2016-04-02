@@ -127,3 +127,37 @@ class FileSystem(Service):
         :raises: CommandExecutionFailure, if chmod failed
         """
         self._exec_command(['chmod', mode, path])
+
+    def wget(self, url, output_file, progress_handler=None):
+        """
+        Download file on the host from given url
+
+        :param url: url to file
+        :type url: str
+        :param output_file: full path to output file
+        :type output_file: str
+        :param progress_handler: progress handler function
+        :type progress_handler: func
+        :return: absolute path to file
+        :rtype: str
+        """
+        rc = None
+        host_executor = self.host.executor()
+        cmd = ["wget", "-O", output_file, "--no-check-certificate", url]
+        with host_executor.session() as host_session:
+            wget_command = host_session.command(cmd)
+            with wget_command.execute() as (_, _, stderr):
+                counter = 0
+                while rc is None:
+                    line = stderr.readline()
+                    if counter == 1000 and progress_handler:
+                        progress_handler(line)
+                        counter = 0
+                    counter += 1
+                    rc = wget_command.get_rc()
+        if rc:
+            raise errors.CommandExecutionFailure(
+                host_executor, cmd, rc,
+                "Failed to download file from url {0}".format(url)
+            )
+        return output_file

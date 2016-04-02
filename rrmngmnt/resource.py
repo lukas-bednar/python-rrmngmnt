@@ -13,7 +13,11 @@ class Resource(object):
             """
             self.warning(*args, **kwargs)
 
+    def __init__(self):
+        super(Resource, self).__init__()
+        logger = logging.getLogger(self.__class__.__name__)
+        self._logger_adapter = self.LoggerAdapter(logger, {'self': self})
+
     @property
     def logger(self):
-        logger = logging.getLogger(self.__class__.__name__)
-        return self.LoggerAdapter(logger, {'self': self})
+        return self._logger_adapter
