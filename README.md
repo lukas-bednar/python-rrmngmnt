@@ -6,7 +6,7 @@ Remote Resources MaNaGeMeNT
 This tool helps you manage remote machines and services running on that.
 It is targeted to Linux based machines. All is done via SSH connection,
 that means SSH server must be running there already.
-```
+```python
 from rrmngmnt import Host, RootUser
 
 h = Host("10.11.12.13")
@@ -21,7 +21,7 @@ List of provided interfaces to manage resources on machine, and examples.
 ### Filesystem
 Basic file operations, you can find there subset of python 'os' module related
 to files.
-```
+```python
 print h.fs.exists("/path/to/file")
 h.fs.chown("/path/to/file", "root", "root")
 h.fs.chmod("/path/to/file", "644")
@@ -30,7 +30,7 @@ h.fs.unlink("/path/to/file")
 
 ### Network
 It allows to manage network configuration.
-```
+```python
 print h.network.hostname
 h.network.hostname = "my.machine.org"
 print h.network.all_interfaces()
@@ -49,7 +49,7 @@ Implemented managements:
   * DNF
   * RPM
 
-```
+```python
 # install htop package using implicit management
 h.package_management.install('htop')
 # remove htop package using rpm explicitly
@@ -66,7 +66,7 @@ Implemented managements:
   * SysVinit
   * InitCtl
 
-```
+```python
 if h.service('httpd').status():
     h.service('httpd').stop()
 if h.service('httpd').is_enabled():
@@ -89,7 +89,7 @@ Implemented managements:
   * SSH
   * IPMI
 
-```
+```python
 ipmi_user = User(pm_user, pm_password)
 ipmi_params = {
     'pm_if_type': 'lan',
@@ -104,6 +104,6 @@ h.power_manager.restart()
 ```
 
 ## Install
-```
+```python
 python setup.py devop
 ```
