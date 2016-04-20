@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 import pytest
 
-from rrmngmnt import Host
+from rrmngmnt import Host, User
 from rrmngmnt import errors
 from .common import FakeExecutor
 
@@ -14,8 +14,8 @@ def teardown_module():
 
 
 def fake_cmd_data(cmd_to_data, files):
-    def executor(self, user=None, pkey=False):
-        e = FakeExecutor(user)
+    def executor(self, user=User('fakeuser', 'password'), pkey=False):
+        e = FakeExecutor(user, self.ip)
         e.cmd_to_data = cmd_to_data.copy()
         e.files_content = files
         return e
@@ -40,7 +40,14 @@ class TestFilesystem(object):
         'mkdir /dir/to/remove': (0, '', ''),
         'chown root:root /dir/to/remove': (0, '', ''),
         'chmod 600 /dir/to/remove': (0, '', ''),
-        'chmod 600 /tmp/nofile': (1, '', ''),
+        'chmod 600 /tmp/nofile': (
+            1, '',
+            'chmod: cannot access ‘/tmp/nofile’: No such file or directory',
+        ),
+        'touch /path/to/file': (0, '', ''),
+        'touch /path/to/nopermission': (1, '', ''),
+        'ls -A1 /path/to/empty': (0, '\n', ''),
+        'ls -A1 /path/to/two': (0, 'first\nsecond\n', ''),
     }
     files = {}
 
@@ -101,5 +108,25 @@ class TestFilesystem(object):
         self.get_host().fs.chmod('/dir/to/remove', '600')
 
     def test_chmod_negative(self):
-        with pytest.raises(errors.CommandExecutionFailure):
+        with pytest.raises(errors.CommandExecutionFailure) as ex_info:
             self.get_host().fs.chmod('/tmp/nofile', '600')
+        assert "No such file or directory" in str(ex_info.value)
+
+    def test_touch_positive(self):
+        assert self.get_host().fs.touch('/path/to/file', '')
+
+    def test_touch_negative(self):
+        assert not self.get_host().fs.touch('/path/to/nopermission', '')
+
+    def test_touch_wrong_params(self):
+        with pytest.raises(Exception) as ex_info:
+            self.get_host().fs.touch('/path/to', 'somefile')
+        assert "touch /path/to" in str(ex_info.value)
+
+    def test_listdir_empty(self):
+        assert self.get_host().fs.listdir('/path/to/empty') == []
+
+    def test_listdir_two(self):
+        assert self.get_host().fs.listdir('/path/to/two') == [
+            'first', 'second',
+        ]

@@ -89,6 +89,10 @@ class FakeExecutor(Executor):
             yield six.StringIO(), six.StringIO(out), six.StringIO(err)
             self._rc = rc
 
+    def __init__(self, user, address):
+        super(FakeExecutor, self).__init__(user)
+        self.address = address
+
     def session(self, timeout=None):
         return FakeExecutor.Session(self, timeout)
 

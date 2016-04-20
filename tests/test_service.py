@@ -14,7 +14,7 @@ def teardown_module():
 
 def fake_cmd_data(cmd_to_data):
     def executor(self, user=None, pkey=False):
-        e = FakeExecutor(user)
+        e = FakeExecutor(user, self.ip)
         e.cmd_to_data = cmd_to_data.copy()
         return e
     Host.executor = executor
