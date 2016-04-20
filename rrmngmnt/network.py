@@ -1,9 +1,9 @@
 import re
 import os
+import six
 import shlex
 import logging
 import netaddr
-import functools
 from rrmngmnt.service import Service
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class _session(object):
 
 
 def keep_session(func):
-    @functools.wraps(func)
+    @six.wraps(func)
     def _dec(self, *args, **kwargs):
         with self._m:
             return func(self, *args, **kwargs)
@@ -166,7 +166,7 @@ class Network(Service):
     """
     Get / Set hostname (persistently)
 
-    print network.hostname
+    print(network.hostname)
     network.hostname = "new.hostname.com"
     """
 
@@ -462,7 +462,7 @@ class Network(Service):
         with self.host.executor().session() as resource_session:
             with resource_session.open_file(dst, 'w') as resource_file:
                 resource_file.write("DEVICE=%s\n" % nic)
-                for k, v in params.iteritems():
+                for k, v in six.iteritems(params):
                     resource_file.write("%s=%s\n" % (k, v))
 
     def delete_ifcfg_file(self, nic, ifcfg_path=IFCFG_PATH):

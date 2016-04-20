@@ -123,7 +123,7 @@ class Host(Resource):
         :type pm_type: str
         :return: instance of PowerManager
         :rtype: PowerManager
-        :raise: Exception
+        :raises: Exception
         """
         if self._power_managers:
             if pm_type:
@@ -394,7 +394,7 @@ class Host(Resource):
         values = ["dist", "ver", "name"]
         cmd = [
             "python", "-c",
-            "import platform;print ','.join(platform.linux_distribution())"
+            "import platform;print(','.join(platform.linux_distribution()))"
             ]
         rc, out, _ = self.run_command(cmd)
         if rc:

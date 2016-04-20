@@ -1,12 +1,12 @@
 import contextlib
 from subprocess import list2cmdline
-from StringIO import StringIO
 from rrmngmnt.executor import Executor
+import six
 
 
-class FakeFile(StringIO):
+class FakeFile(six.StringIO):
     def __init__(self, *args, **kwargs):
-        StringIO.__init__(self, *args, **kwargs)
+        six.StringIO.__init__(self, *args, **kwargs)
         self.data = None
 
     def __exit__(self, *args):
@@ -18,7 +18,7 @@ class FakeFile(StringIO):
     def close(self):
         self.seek(0)
         self.data = self.read()
-        StringIO.close(self)
+        six.StringIO.close(self)
 
 
 class FakeExecutor(Executor):
@@ -86,7 +86,7 @@ class FakeExecutor(Executor):
         @contextlib.contextmanager
         def execute(self, bufsize=-1, timeout=None):
             rc, out, err = self._ss.get_data(self.cmd)
-            yield StringIO(), StringIO(out), StringIO(err)
+            yield six.StringIO(), six.StringIO(out), six.StringIO(err)
             self._rc = rc
 
     def session(self, timeout=None):
@@ -102,8 +102,8 @@ if __name__ == "__main__":
     u = RootUser('password')
     e = FakeExecutor(u)
     e.cmd_to_data = {'echo ahoj': (0, 'ahoj', '')}
-    print e.run_cmd(['echo', 'ahoj'])
+    print(e.run_cmd(['echo', 'ahoj']))
     with e.session() as ss:
         with ss.open_file('/tmp/a', 'w') as fh:
             fh.write("ahoj")
-    print e.files_content['/tmp/a'], e.files_content['/tmp/a'].data
+    print(e.files_content['/tmp/a'], e.files_content['/tmp/a'].data)
