@@ -73,6 +73,30 @@ if h.service('httpd').is_enabled():
     h.service('httpd').disable()
 ```
 
+### Operating System Info
+Host provide `os` attribute which allows obtain basic operating system info.
+Note that `os.release_info` depends on systemd init system.
+
+```python
+print h.os.distribution
+# Distribution(distname='Fedora', version='23', id='Twenty Three')
+
+print h.os.release_info
+# {'HOME_URL': 'https://fedoraproject.org/',
+#  'ID': 'fedora',
+#  'NAME': 'Fedora',
+#  'PRETTY_NAME': 'Fedora 23 (Workstation Edition)',
+#  'VARIANT': 'Workstation Edition',
+#  'VARIANT_ID': 'workstation',
+#  'VERSION': '23 (Workstation Edition)',
+#  'VERSION_ID': '23',
+#  ...
+# }
+
+print h.os.release_str
+# Fedora release 23 (Twenty Three)
+```
+
 ### Storage Management
 It is in PROGRESS state. Planed are NFS & LVM services.
 

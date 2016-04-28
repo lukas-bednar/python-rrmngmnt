@@ -19,6 +19,7 @@ from rrmngmnt.service import Systemd, SysVinit, InitCtl
 from rrmngmnt.resource import Resource
 from rrmngmnt.filesystem import FileSystem
 from rrmngmnt.package_manager import PackageManagerProxy
+from rrmngmnt.operatingsystem import OperatingSystem
 
 
 class Host(Resource):
@@ -66,6 +67,7 @@ class Host(Resource):
         self._power_managers = dict()
         self._service_provider = service_provider
         self._package_manager = PackageManagerProxy(self)
+        self.os = OperatingSystem(self)
         self.add()  # adding host to inventory
 
     def __str__(self):
@@ -391,15 +393,19 @@ class Host(Resource):
              'ver': '7.1'}
         :rtype: dict
         """
+        warnings.warn(
+            "This method is deprecated and will be removed. "
+            "Use Host.os.distribution instead."
+        )
         values = ["dist", "ver", "name"]
-        cmd = [
-            "python", "-c",
-            "import platform;print(','.join(platform.linux_distribution()))"
-            ]
-        rc, out, _ = self.run_command(cmd)
-        if rc:
+        try:
+            return {
+                'dist': self.os.distribution.distname,
+                'ver': self.os.distribution.version,
+                'name': self.os.distribution.id,
+            }
+        except errors.CommandExecutionFailure:
             return dict([(x, None) for x in values])
-        return dict(zip(values, [i.strip() for i in out.split(",")]))
 
     def get_network(self):
         return Network(self)
