@@ -1,9 +1,11 @@
-import re
-import os
-import six
-import shlex
 import logging
 import netaddr
+import os
+import re
+import shlex
+import six
+import subprocess
+
 from rrmngmnt.service import Service
 
 logger = logging.getLogger(__name__)
@@ -583,3 +585,37 @@ class Network(Service):
         cmd = "ip link set down %s" % nic
         rc, _, _ = self.host.run_command(shlex.split(cmd))
         return not bool(rc)
+
+    def is_connective(self, ping_timeout=20.0):
+        """
+        Check if host network is connective via ping command
+
+        :param ping_timeout: time to wait for response
+        :type ping_timeout: float
+        :return: True if address is connective via ping command,
+            False otherwise
+        :rtype: bool
+        """
+        host_address = self.host.ip
+        # Leave it for future support of IPV6
+        ping_cmd = "ping6" if netaddr.valid_ipv6(self.host.ip) else "ping"
+        self.logger.info(
+            "Check if address is connective via ping in given timeout %s",
+            ping_timeout
+        )
+        command = [
+            ping_cmd,
+            "-c", "1",
+            "-w", str(ping_timeout),
+            host_address
+        ]
+        p = subprocess.Popen(
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        out, _ = p.communicate()
+        if p.returncode:
+            self.logger.debug(
+                "Failed to ping address %s: %s", host_address, out
+            )
+            return False
+        return True
