@@ -9,7 +9,7 @@ class User(Resource):
         :param password: password
         :type password: str
         """
-        super(Resource, self).__init__()
+        super(User, self).__init__()
         self.name = name
         self.password = password
 
