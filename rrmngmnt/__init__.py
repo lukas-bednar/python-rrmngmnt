@@ -10,11 +10,11 @@ from rrmngmnt.db import Database
 
 
 __all__ = [
-    Host,
-    User,
-    RootUser,
-    Domain,
-    InternalDomain,
-    ADUser,
-    Database,
+    'Host',
+    'User',
+    'RootUser',
+    'Domain',
+    'InternalDomain',
+    'ADUser',
+    'Database',
 ]
