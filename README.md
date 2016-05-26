@@ -1,6 +1,9 @@
+[![Build Status][travisimg]][travis]
+[![Code Coverage][codecovimg]][codecov]
+[![Code Health][codehealthimg]][codehealth]
+
 # python-rrmngmnt
 Remote Resources MaNaGeMeNT
-[![Build Status](https://travis-ci.org/rhevm-qe-automation/python-rrmngmnt.svg?branch=master)](https://travis-ci.org/rhevm-qe-automation/python-rrmngmnt)
 
 ## Intro
 This tool helps you manage remote machines and services running on that.
@@ -131,3 +134,10 @@ h.power_manager.restart()
 ```python
 python setup.py devop
 ```
+
+[travisimg]: https://travis-ci.org/rhevm-qe-automation/python-rrmngmnt.svg?branch=master
+[travis]: https://travis-ci.org/rhevm-qe-automation/python-rrmngmnt
+[codecovimg]: https://codecov.io/gh/rhevm-qe-automation/python-rrmngmnt/branch/master/graph/badge.svg
+[codecov]: https://codecov.io/gh/rhevm-qe-automation/python-rrmngmnt
+[codehealthimg]: https://landscape.io/github/rhevm-qe-automation/python-rrmngmnt/master/landscape.svg?style=flat
+[codehealth]: https://landscape.io/github/rhevm-qe-automation/python-rrmngmnt/master
