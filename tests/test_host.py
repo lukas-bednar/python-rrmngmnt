@@ -30,3 +30,16 @@ class TestExecutorUser(object):
         h.executor_user = user
         e = h.executor()
         e.user.name == 'lukas'
+
+
+class TestHostFqdnIp(object):
+
+    def test_host_ip(self):
+        h = Host('127.0.0.1')
+        assert h.ip == '127.0.0.1'
+        assert h.fqdn == 'localhost'
+
+    def test_host_fqdn(self):
+        h = Host('localhost')
+        assert h.ip == '127.0.0.1'
+        assert h.fqdn == 'localhost'
