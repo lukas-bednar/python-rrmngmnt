@@ -1,6 +1,7 @@
 import os
-from rrmngmnt.service import Service
+
 from rrmngmnt import errors
+from rrmngmnt.service import Service
 
 
 class FileSystem(Service):
@@ -10,11 +11,12 @@ class FileSystem(Service):
     """
     def _exec_command(self, cmd):
         host_executor = self.host.executor()
-        rc, _, err = host_executor.run_cmd(cmd)
+        rc, out, err = host_executor.run_cmd(cmd)
         if rc:
             raise errors.CommandExecutionFailure(
                 cmd=cmd, executor=host_executor, rc=rc, err=err
             )
+        return out
 
     def _exec_file_test(self, op, path):
         return self.host.executor().run_cmd(

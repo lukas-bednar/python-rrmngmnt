@@ -175,3 +175,154 @@ class TestOsReleaseCorrupted(object):
         info = self.get_host().os.release_info
         assert 'VERSION_ID' not in info
         assert len(info) == 4
+
+
+type_map = {
+    'st_mode': ('0x%f', lambda x: int(x, 16)),
+    'st_ino': ('%i', int),
+    'st_dev': ('%d', int),
+    'st_nlink': ('%h', int),
+    'st_uid': ('%u', int),
+    'st_gid': ('%g', int),
+    'st_size': ('%s', int),
+    'st_atime': ('%X', int),
+    'st_mtime': ('%Y', int),
+    'st_ctime': ('%W', int),
+    'st_blocks': ('%b', int),
+    'st_blksize': ('%o', int),
+    'st_rdev': ('%t', int),
+}
+
+
+class TestFileStats(object):
+    data = {
+        'stat -c %s /tmp/test' %
+        ','.join(["%s=%s" % (k, v[0]) for k, v in type_map.items()]): (
+            0,
+            (
+                'st_ctime=0,'
+                'st_rdev=0,'
+                'st_blocks=1480,'
+                'st_nlink=1,'
+                'st_gid=0,'
+                'st_dev=2051,'
+                'st_ino=11804680,'
+                'st_mode=0x81a4,'
+                'st_mtime=1463487739,'
+                'st_blksize=4096,'
+                'st_size=751764,'
+                'st_uid=0,'
+                'st_atime=1463487196'
+            ),
+            ''
+        ),
+        'stat -c "%U %G" /tmp/test': (
+            0,
+            'root root',
+            ''
+        ),
+        'stat -c %a /tmp/test': (
+            0,
+            '644\n',
+            ''
+        ),
+        'id -u root': (
+            0,
+            '',
+            ''
+        ),
+        'id -g root': (
+            0,
+            '',
+            ''
+        )
+    }
+    files = {}
+
+    @classmethod
+    def setup_class(cls):
+        fake_cmd_data(cls.data, cls.files)
+
+    def get_host(self, ip='1.1.1.1'):
+        return Host(ip)
+
+    def test_get_file_stats(self):
+        file_stats = self.get_host().os.stat('/tmp/test')
+        assert (
+            file_stats.st_mode == 33188 and
+            file_stats.st_uid == 0 and
+            file_stats.st_gid == 0
+        )
+
+    def test_get_file_owner(self):
+        file_user, file_group = self.get_host().os.get_file_owner('/tmp/test')
+        assert file_user == 'root' and file_group == 'root'
+
+    def test_get_file_permissions(self):
+        assert self.get_host().os.get_file_permissions('/tmp/test') == '644'
+
+    def test_user_exists(self):
+        assert self.get_host().os.user_exists('root')
+
+    def test_group_exists(self):
+        assert self.get_host().os.group_exists('root')
+
+
+class TestFileStatsNegative(object):
+    data = {
+        'stat -c %s /tmp/negative_test' %
+        ','.join(["%s=%s" % (k, v[0]) for k, v in type_map.items()]): (
+            1,
+            '',
+            'cannot stat ‘/tmp/negative_test’: No such file or directory'
+        ),
+        'stat -c "%U %G" /tmp/negative_test': (
+            1,
+            '',
+            'cannot stat ‘/tmp/negative_test’: No such file or directory'
+        ),
+        'stat -c %a /tmp/negative_test': (
+            1,
+            '',
+            'cannot stat ‘/tmp/negative_test’: No such file or directory'
+        ),
+        'id -u test': (
+            1,
+            '',
+            ''
+        ),
+        'id -g test': (
+            1,
+            '',
+            ''
+        )
+    }
+    files = {}
+
+    @classmethod
+    def setup_class(cls):
+        fake_cmd_data(cls.data, cls.files)
+
+    def get_host(self, ip='1.1.1.1'):
+        return Host(ip)
+
+    def test_get_file_stats(self):
+        with pytest.raises(errors.CommandExecutionFailure) as ex_info:
+            self.get_host().os.stat('/tmp/negative_test')
+        assert "No such file" in str(ex_info.value)
+
+    def test_get_file_owner(self):
+        with pytest.raises(errors.CommandExecutionFailure) as ex_info:
+            self.get_host().os.get_file_owner('/tmp/negative_test')
+        assert "No such file" in str(ex_info.value)
+
+    def test_get_file_permissions(self):
+        with pytest.raises(errors.CommandExecutionFailure) as ex_info:
+            self.get_host().os.get_file_permissions('/tmp/negative_test')
+        assert "No such file" in str(ex_info.value)
+
+    def test_user_exists(self):
+        assert not self.get_host().os.user_exists('test')
+
+    def test_group_exists(self):
+        assert not self.get_host().os.group_exists('test')

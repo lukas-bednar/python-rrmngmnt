@@ -3,23 +3,24 @@ This module define resource Host which is entry point to various services.
 It should hold methods / properties which returns you Instance of specific
 Service hosted on that Host.
 """
-import os
 import copy
+import os
 import socket
-import netaddr
 import warnings
 
-from rrmngmnt import ssh
+import netaddr
+
 from rrmngmnt import errors
 from rrmngmnt import power_manager
+from rrmngmnt import ssh
 from rrmngmnt.common import fqdn2ip
-from rrmngmnt.network import Network
-from rrmngmnt.storage import NFSService, LVMService
-from rrmngmnt.service import Systemd, SysVinit, InitCtl
-from rrmngmnt.resource import Resource
 from rrmngmnt.filesystem import FileSystem
-from rrmngmnt.package_manager import PackageManagerProxy
+from rrmngmnt.network import Network
 from rrmngmnt.operatingsystem import OperatingSystem
+from rrmngmnt.package_manager import PackageManagerProxy
+from rrmngmnt.resource import Resource
+from rrmngmnt.service import Systemd, SysVinit, InitCtl
+from rrmngmnt.storage import NFSService, LVMService
 
 
 class Host(Resource):
@@ -243,7 +244,7 @@ class Host(Resource):
             )
         return rc, out, err
 
-    def copy_to(self, resource, src, dst):
+    def copy_to(self, resource, src, dst, mode=None, ownership=None):
         """
         Copy to host from another resource
 
@@ -253,12 +254,20 @@ class Host(Resource):
         :type src: str
         :param dst: path to destination
         :type dst: str
+        :param mode: file permissions
+        :type mode: str
+        :param ownership: file ownership(ex. ('root', 'root'))
+        :type ownership: tuple
         """
         with resource.executor().session() as resource_session:
             with self.executor().session() as host_session:
                 with resource_session.open_file(src, 'rb') as resource_file:
                     with host_session.open_file(dst, 'wb') as host_file:
                         host_file.write(resource_file.read())
+        if mode:
+            self.fs.chmod(path=dst, mode=mode)
+        if ownership:
+            self.fs.chown(dst, *ownership)
 
     def _create_service(self, name, timeout):
         for provider in self.default_service_providers:
