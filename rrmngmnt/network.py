@@ -64,7 +64,7 @@ class HostnameHandler(object):
         :return: hostname
         :rtype: string
         """
-        rc, out, _ = self._m.runCmd(['hostname'])
+        rc, out, _ = self._m.runCmd(['hostname', '-f'])
         if rc:
             return None
         return out.strip()

@@ -235,7 +235,7 @@ class TestHostNameEtc(object):
 
     data = {
         'which hostnamectl': (1, '', ''),
-        'hostname': (0, 'local', ''),
+        'hostname -f': (0, 'local', ''),
         'hostname something ; sed -i -e /^HOSTNAME/d /etc/sysconfig/network '
         '&& echo HOSTNAME=something >> /etc/sysconfig/network': (0, '', ''),
     }
