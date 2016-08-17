@@ -6,10 +6,10 @@ Service hosted on that Host.
 import copy
 import os
 import socket
+import threading
 import warnings
 
 import netaddr
-
 from rrmngmnt import errors
 from rrmngmnt import power_manager
 from rrmngmnt import ssh
@@ -31,6 +31,7 @@ class Host(Resource):
     # The purpose of inventory variable is keeping all instances of
     # interesting resources in single place.
     inventory = list()
+    lock = threading.Lock()
 
     default_service_providers = [
         Systemd,
@@ -94,14 +95,15 @@ class Host(Resource):
         """
         Add host to inventory
         """
-        try:
-            host = self.get(self.ip)
-        except ValueError:
-            pass
-        else:
-            self.inventory.remove(host)
-        self.logger.debug("Adding host with ip '%s' to inventory", self.ip)
-        self.inventory.append(self)
+        with self.lock:
+            try:
+                host = self.get(self.ip)
+            except ValueError:
+                pass
+            else:
+                self.inventory.remove(host)
+            self.logger.debug("Adding host with ip '%s' to inventory", self.ip)
+            self.inventory.append(self)
 
     @property
     def fqdn(self):
