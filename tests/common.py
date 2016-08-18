@@ -21,6 +21,23 @@ class FakeFile(six.StringIO):
         six.StringIO.close(self)
 
 
+class ByteFakeFile(six.BytesIO):
+    def __init__(self, buf=six.b('')):
+        six.BytesIO.__init__(self, six.b(buf))
+        self.data = None
+
+    def __exit__(self, *args):
+        self.close()
+
+    def __enter__(self):
+        return self
+
+    def close(self):
+        self.seek(0)
+        self.data = self.read().decode("utf-8", errors="replace")
+        six.BytesIO.close(self)
+
+
 class FakeExecutor(Executor):
     cmd_to_data = None
     files_content = {}
@@ -64,7 +81,10 @@ class FakeExecutor(Executor):
                     raise
                 else:
                     data = ''
-            data = FakeFile(data)
+            if len(mode) == 2 and mode[1] == 'b':
+                data = ByteFakeFile(data)
+            else:
+                data = FakeFile(data)
             if mode[0] == 'w':
                 data.seek(0)
             self._executor.files_content[name] = data

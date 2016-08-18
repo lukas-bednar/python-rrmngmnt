@@ -1,5 +1,7 @@
 import os
 
+import six
+
 from rrmngmnt import errors
 from rrmngmnt.service import Service
 
@@ -91,7 +93,7 @@ class FileSystem(Service):
         executor = self.host.executor()
         with executor.session() as session:
             with session.open_file(path, 'wb') as fh:
-                fh.write(content)
+                fh.write(six.b(content))
             self.chmod(path=path, mode="+x")
 
     def mkdir(self, path):
