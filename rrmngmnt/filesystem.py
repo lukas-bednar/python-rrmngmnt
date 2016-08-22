@@ -132,6 +132,67 @@ class FileSystem(Service):
         """
         self._exec_command(['chmod', mode, path])
 
+    def get(self, path_src, path_dst):
+        """
+        Fetch file from Host and store on local system
+
+        :param path_src: path to file on remote system
+        :type path_src: str
+        :param path_dst: path to file on local system or directory
+        :type path_dst: str
+        :return: path to destination file
+        :rtype: str
+        """
+        if os.path.isdir(path_dst):
+            path_dst = os.path.join(path_dst, os.path.basename(path_src))
+        with self.host.executor().session() as ss:
+            with ss.open_file(path_src, 'rb') as rh:
+                with open(path_dst, 'wb') as wh:
+                    wh.write(rh.read())
+        return path_dst
+
+    def put(self, path_src, path_dst):
+        """
+        Upload file from local system to Host
+
+        :param path_src: path to file on local system
+        :type path_src: str
+        :param path_dst: path to file on remote system or directory
+        :type path_dst: str
+        :return: path to destination file
+        :rtype: str
+        """
+        if self.isdir(path_dst):
+            path_dst = os.path.join(path_dst, os.path.basename(path_src))
+        with self.host.executor().session() as ss:
+            with open(path_src, 'rb') as rh:
+                with ss.open_file(path_dst, 'wb') as wh:
+                    wh.write(rh.read())
+        return path_dst
+
+    def transfer(self, path_src, target_host, path_dst):
+        """
+        Transfer file from one remote system (self) to other
+        remote system (target_host).
+
+        :param path_src: path to file on local system
+        :type path_src: str
+        :param target_host: target system
+        :type target_host: instance of Host
+        :param path_dst: path to file on remote system or directory
+        :type path_dst: str
+        :return: path to destination file
+        :rtype: str
+        """
+        if target_host.fs.isdir(path_dst):
+            path_dst = os.path.join(path_dst, os.path.basename(path_src))
+        with self.host.executor().session() as h1s:
+            with target_host.executor().session() as h2s:
+                with h1s.open_file(path_src, 'rb') as rh:
+                    with h2s.open_file(path_dst, 'wb') as wh:
+                        wh.write(rh.read())
+        return path_dst
+
     def wget(self, url, output_file, progress_handler=None):
         """
         Download file on the host from given url

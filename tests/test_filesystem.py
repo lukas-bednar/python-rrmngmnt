@@ -130,3 +130,54 @@ class TestFilesystem(object):
         assert self.get_host().fs.listdir('/path/to/two') == [
             'first', 'second',
         ]
+
+
+class TestFSGetPutFile(object):
+    data = {
+        "[ -d /path/to/put_dir ]": (0, "", ""),
+    }
+    files = {
+        "/path/to/get_file": "data of get_file",
+    }
+
+    @classmethod
+    def setup_class(cls):
+        fake_cmd_data(cls.data, cls.files)
+
+    def get_host(self, ip='1.1.1.1'):
+        return Host(ip)
+
+    def test_get(self, tmpdir):
+        self.get_host().fs.get("/path/to/get_file", str(tmpdir))
+        assert tmpdir.join("get_file").read() == "data of get_file"
+
+    def test_put(self, tmpdir):
+        p = tmpdir.join("put_file")
+        p.write("data of put_file")
+        self.get_host().fs.put(str(p), "/path/to/put_dir")
+        assert self.files[
+            '/path/to/put_dir/put_file'].data == "data of put_file"
+
+
+class TestTransfer(object):
+    data = {
+        "[ -d /path/to/dest_dir ]": (0, "", ""),
+    }
+    files = {
+        "/path/to/file_to_transfer": "data to transfer",
+    }
+
+    @classmethod
+    def setup_class(cls):
+        fake_cmd_data(cls.data, cls.files)
+
+    def get_host(self, ip='1.1.1.1'):
+        return Host(ip)
+
+    def test_transfer(self):
+        self.get_host().fs.transfer(
+            "/path/to/file_to_transfer", self.get_host("1.1.1.2"),
+            "/path/to/dest_dir",
+        )
+        assert self.files[
+            '/path/to/dest_dir/file_to_transfer'].data == "data to transfer"

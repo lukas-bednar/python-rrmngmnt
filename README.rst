@@ -42,6 +42,23 @@ related to files.
     h.fs.chmod("/path/to/file", "644")
     h.fs.unlink("/path/to/file")
 
+In additional there are methods to fetch / put file from / to remote system
+to / from local system.
+
+.. code:: python
+
+    h.fs.get("/path/to/remote/file", "/path/to/local/file/or/target/dir")
+    h.fs.put("/path/to/local/file", "/path/to/remote/file/or/target/dir")
+
+There is one special method which allows transfer file between hosts.
+
+.. code:: python
+
+    h1.fs.transfer(
+        "/path/to/file/on/h1",
+        h2, "/path/to/file/on/h2/or/target/dir",
+    )
+
 Network
 ~~~~~~~
 

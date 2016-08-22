@@ -261,6 +261,10 @@ class Host(Resource):
         :param ownership: file ownership(ex. ('root', 'root'))
         :type ownership: tuple
         """
+        warnings.warn(
+            "This method is deprecated and will be removed. "
+            "Use Host.fs.transfer instead."
+        )
         with resource.executor().session() as resource_session:
             with self.executor().session() as host_session:
                 with resource_session.open_file(src, 'rb') as resource_file:
