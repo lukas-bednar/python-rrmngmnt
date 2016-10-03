@@ -1,6 +1,7 @@
 import os
 
 import six
+import warnings
 
 from rrmngmnt import errors
 from rrmngmnt.service import Service
@@ -52,7 +53,25 @@ class FileSystem(Service):
             ['ls', '-A1', path]
         )[1].split()
 
-    def touch(self, file_name, path):
+    def touch(self, *args):
+        """
+        Creates files on host
+
+        __author__ = "vkondula"
+        :param args: Paths of files to create
+        :type args: list of str
+        :returns: True when file creation succeeds, False otherwise
+        :rtype: bool
+        """
+        if len(args) == 2 and self.isdir(args[1]):
+            warnings.warn(
+                "This usecase is deprecated and will be removed. "
+                "Use list of fullpaths instead"
+            )
+            return self._deprecated_touch(args[0], args[1])
+        return self.host.run_command(['touch'] + list(args))[0] == 0
+
+    def _deprecated_touch(self, file_name, path):
         """
         Creates a file on host
 
@@ -62,7 +81,6 @@ class FileSystem(Service):
         :param path: The path under which the file will be created
         :type path: str
         :returns: True when file creation succeeds, False otherwise
-        False otherwise
         :rtype: bool
         """
         full_path = os.path.join(path, file_name)

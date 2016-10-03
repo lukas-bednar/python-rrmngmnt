@@ -30,6 +30,9 @@ class TestFilesystem(object):
         '[ -f /tmp/nofile ]': (1, '', ''),
         '[ -d /tmp/dir ]': (0, '', ''),
         '[ -d /tmp/nodir ]': (1, '', ''),
+        '[ -d /path/to/file1 ]': (1, '', ''),
+        '[ -d /path/to ]': (0, '', ''),
+        '[ -d somefile ]': (1, '', ''),
         'rm -f /path/to/remove': (0, '', ''),
         'rm -f /dir/to/remove': (
             1, '', 'rm: cannot remove ‘.tox/’: Is a directory',
@@ -44,7 +47,8 @@ class TestFilesystem(object):
             1, '',
             'chmod: cannot access ‘/tmp/nofile’: No such file or directory',
         ),
-        'touch /path/to/file': (0, '', ''),
+        'touch /path/to/file /path/to/file1': (0, '', ''),
+        'touch /path/to/file2': (0, '', ''),
         'touch /path/to/nopermission': (1, '', ''),
         'ls -A1 /path/to/empty': (0, '\n', ''),
         'ls -A1 /path/to/two': (0, 'first\nsecond\n', ''),
@@ -113,10 +117,13 @@ class TestFilesystem(object):
         assert "No such file or directory" in str(ex_info.value)
 
     def test_touch_positive(self):
-        assert self.get_host().fs.touch('/path/to/file', '')
+        assert self.get_host().fs.touch('/path/to/file', '/path/to/file1')
 
     def test_touch_negative(self):
-        assert not self.get_host().fs.touch('/path/to/nopermission', '')
+        assert not self.get_host().fs.touch('/path/to/nopermission')
+
+    def test_backwards_comp_touch(self):
+        assert self.get_host().fs.touch('file2', '/path/to')
 
     def test_touch_wrong_params(self):
         with pytest.raises(Exception) as ex_info:
