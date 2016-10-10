@@ -5,6 +5,7 @@ import warnings
 
 from rrmngmnt import errors
 from rrmngmnt.service import Service
+from rrmngmnt.resource import Resource
 
 
 class FileSystem(Service):
@@ -244,3 +245,145 @@ class FileSystem(Service):
                 "Failed to download file from url {0}".format(url)
             )
         return output_file
+
+    def mktemp(self, template=None, tmpdir=None, directory=False):
+        """
+        Make temporary file
+
+        :param template: template for path, 'X's are replaced
+        :type template: str
+        :param tmpdir: where to create file, if not specified
+            use $TMPDIR if set, else /tmp
+        :type tmpdir: str
+        :param directory: create directory instead of a file
+        :type directory: bool
+        :return: absolute path to file or None if failed
+        :rtype: str
+        """
+        cmd = ['mktemp']
+        if tmpdir:
+            cmd.extend(['-p', tmpdir])
+        if directory:
+            cmd.append('-d')
+        if template:
+            cmd.append(template)
+        rc, out, _ = self.host.run_command(cmd)
+        if rc:
+            raise errors.FailCreateTemp(cmd)
+        return out.replace('\n', '')
+
+    def mount_point(
+        self, source, target=None, fs_type=None, opts=None
+    ):
+        return MountPoint(
+            self,
+            source=source,
+            target=target,
+            fs_type=fs_type,
+            opts=opts,
+        )
+
+
+class MountPoint(Resource):
+    """
+    Class for mounting devices.
+    """
+    def __init__(self, fs, source, target=None, fs_type=None, opts=None):
+        """
+        Mounts source to target mount point
+
+        __author__ = "vkondula"
+        :param fs: FileSystem object instance
+        :type fs: FileSystem
+        :param source: Full path to source
+        :type source: str
+        :param target: Path to target directory, if omitted, a temporary
+        folder is created instead
+        :type target: str
+        :param fs_type: File system type
+        :type fs_type: str
+        :param opts: Mount options separated by a comma such as:
+        'sync,rw,guest'
+        :type opts: str
+        """
+        super(MountPoint, self).__init__()
+        self.fs = fs
+        self.source = source
+        self.opts = opts
+        self.fs_type = fs_type
+        self.target = target
+        self._tmp = not bool(target)
+        self._mounted = False
+
+    def __enter__(self):
+        self.mount()
+        return self
+
+    def __exit__(self, type_, value, tb):
+        try:
+            self.umount()
+        except errors.MountError as e:
+            self.logger.error(e)
+            if not type_:
+                raise
+
+    def __str__(self):
+        return (
+            """
+            Mounting point:
+            source: {source}
+            target: {target}
+            file system: {fs}
+            options: {opts}
+            """.format(
+                source=self.source,
+                target=self.target or "*tmp*",
+                fs=self.fs_type or "DEFAULT",
+                opts=self.opts or "DEFAULT",
+            )
+        )
+
+    def mount(self):
+        if self._tmp:
+            self.target = self.fs.mktemp(directory=True)
+        cmd = ['mount', '-v']
+        if self.fs_type:
+            cmd.extend(['-t', self.fs_type])
+        if self.opts:
+            cmd.extend(['-o', self.opts])
+        cmd.extend([self.source, self.target])
+        rc, out, err = self.fs.host.run_command(cmd)
+        if rc:
+            raise errors.FailToMount(self, out, err)
+        self._mounted = True
+
+    def umount(self, force=True):
+        cmd = ['umount', '-v']
+        if force:
+            cmd.append('-f')
+        cmd.append(self.target)
+        rc, out, err = self.fs.host.run_command(cmd)
+        if rc:
+            raise errors.FailToUmount(self, out, err)
+        if self._tmp and not self.fs.listdir(self.target):
+            self.fs.rmdir(self.target)
+        self._mounted = False
+
+    def remount(self, opts):
+        """
+        Remount disk
+
+        'remount' option is implicit
+        :param opts: Mount options separated by a comma such as:
+        'sync,rw,guest'
+        :type opts: str
+        """
+        if not self._mounted:
+            raise errors.FailToRemount(self, '', 'not mounted!')
+        cmd = ['mount', '-v']
+        cmd.extend(['-o', 'remount,%s' % opts])
+        cmd.append(self.target)
+        rc, out, err = self.fs.host.run_command(cmd)
+        if rc:
+            raise errors.FailToRemount(self, out, err)
+        self.opts = opts

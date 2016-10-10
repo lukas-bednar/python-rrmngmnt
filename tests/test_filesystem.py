@@ -52,6 +52,14 @@ class TestFilesystem(object):
         'touch /path/to/nopermission': (1, '', ''),
         'ls -A1 /path/to/empty': (0, '\n', ''),
         'ls -A1 /path/to/two': (0, 'first\nsecond\n', ''),
+        'mktemp -d': (0, '/path/to/tmpdir', ''),
+        'mount -v -t xfs -o bind,ro /path/to /path/to/tmpdir': (0, '', ''),
+        'ls -A1 /path/to/tmpdir': (0, 'first\nsecond\n', ''),
+        'mount -v -o remount,bind,rw /path/to/tmpdir': (0, '', ''),
+        'umount -v -f /path/to/tmpdir': (0, '', ''),
+        'mount -v /not/device /path/to/tmpdir': (
+            32, '', '/not/device is not a block device\n'
+        ),
     }
     files = {}
 
@@ -137,6 +145,18 @@ class TestFilesystem(object):
         assert self.get_host().fs.listdir('/path/to/two') == [
             'first', 'second',
         ]
+
+    def test_mount_point(self):
+        with self.get_host().fs.mount_point(
+            '/path/to', opts='bind,ro', fs_type='xfs'
+        ) as mp:
+            assert not mp.remount('bind,rw')
+
+    def test_fail_mount(self):
+        with pytest.raises(errors.MountError) as ex_info:
+            with self.get_host().fs.mount_point('/not/device'):
+                pass
+        assert "is not a block device" in str(ex_info.value)
 
 
 class TestFSGetPutFile(object):

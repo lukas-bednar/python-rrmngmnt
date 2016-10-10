@@ -59,6 +59,18 @@ There is one special method which allows transfer file between hosts.
         h2, "/path/to/file/on/h2/or/target/dir",
     )
 
+You can also mount devices.
+
+.. code:: python
+
+    with h.fs.mount_point(
+        '//example.com/share', opts='ro,guest',
+        fstype='cifs', target='/mnt/netdisk'
+    ) as mp:
+        h.fs.listdir(mp.target) # list mounted directory
+        mp.remount('rw,sync,guest') # remount with different options
+        h.fs.touch('%s/new_file' % mp.target) # touch file
+
 Network
 ~~~~~~~
 

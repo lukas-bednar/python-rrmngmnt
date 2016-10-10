@@ -76,3 +76,48 @@ class UnsupportedOperation(GeneralResourceError):
         return "Operation '{0}' is not supported for {1}: {2}".format(
             self.operation, self.host, self.reason
         )
+
+
+class FileSystemError(GeneralResourceError):
+    pass
+
+
+class MountError(FileSystemError):
+    def __init__(self, mp):
+        self.mp = mp
+
+
+class FailCreateTemp(FileSystemError):
+    pass
+
+
+class MountCommandError(MountError):
+    def __init__(self, mp, stdout, stderr):
+        super(MountCommandError, self).__init__(mp)
+        self.stdout = stdout
+        self.stderr = stderr
+
+    def __str__(self):
+        return (
+            """
+            stdout:{out}
+            stderr:{err}
+            {mp}
+            """.format(
+                out=self.stdout,
+                err=self.stderr,
+                mp=self.mp,
+            )
+        )
+
+
+class FailToMount(MountCommandError):
+    pass
+
+
+class FailToUmount(MountCommandError):
+    pass
+
+
+class FailToRemount(MountCommandError):
+    pass
