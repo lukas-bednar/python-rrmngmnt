@@ -205,6 +205,24 @@ class Network(Service):
         return None
 
     @keep_session
+    def find_default_gwv6(self):
+        """
+        Find host default ipv6 gateway
+
+        :return: default gateway
+        :rtype: string
+        """
+        out = self._cmd(["ip", "-6", "route"]).splitlines()
+        for i in out:
+            if re.search("default", i):
+                default_gw = re.findall(
+                    r'(?<=\s)[0-9a-fA-F:]{3,}(?=\s)', i
+                )
+                if netaddr.valid_ipv6(default_gw[0]):
+                    return default_gw[0]
+        return None
+
+    @keep_session
     def find_ips(self):
         """
         Find host IPs
@@ -260,7 +278,7 @@ class Network(Service):
     @keep_session
     def find_ip_by_int(self, interface):
         """
-        Find host interface by interface or Bridge name
+        Find host ipv4 by interface or Bridge name
 
         :param interface: interface to get ip from
         :type interface: string
@@ -273,6 +291,29 @@ class Network(Service):
             interface_ip = match_ip.group()
             if netaddr.valid_ipv4(interface_ip):
                 return interface_ip
+        return None
+
+    @keep_session
+    def find_ipv6_by_int(self, interface):
+        """
+        Find host global ipv6 by interface or Bridge name
+
+        :param interface: interface to get ipv6 from
+        :type interface: string
+        :return: IP or None
+        :rtype: string or None
+        """
+        out = self._cmd(["ip", "-6", "addr", "show", interface])
+        for line in out.splitlines():
+            if re.search("global", line):
+                match_ip = re.search(
+                    r'(?<=\s)[0-9a-fA-F:]{3,}(?=/[0-9]{1,3}\s)',
+                    line,
+                )
+                if match_ip:
+                    interface_ip = match_ip.group()
+                    if netaddr.valid_ipv6(interface_ip):
+                        return interface_ip
         return None
 
     @keep_session

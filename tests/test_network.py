@@ -48,6 +48,19 @@ class TestNetwork(object):
             ),
             '',
         ),
+        'ip -6 route': (
+            0,
+            '\n'.join(
+                [
+                    'unreachable ::/96 dev lo  metric 1024  error -101',
+                    'unreachable 2002:a9fe::/32 lo metric 1024  error -101',
+                    'unreachable 2002:ac10::/28 lo metric 1024  error -101',
+                    'fe80:52:0::3fe dev eth0  proto static  metric 100 ',
+                    'default via fe80::0:3fe dev eth0 proto static metric 100',
+                ]
+            ),
+            '',
+        ),
         'ip addr': (
             0,
             ''.join(
@@ -111,6 +124,36 @@ class TestNetwork(object):
                     '    inet 10.11.12.83/24 brd 10.11.12.255 scope global '
                     'enp5s0f0',
                     '           valid_lft forever preferred_lft forever',
+                ]
+            ),
+            ''
+        ),
+        'ip addr show eth0': (
+            0,
+            '\n'.join(
+                [
+                    '2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu ...',
+                    'link/ether 00:1a:4a:01:3f:1c brd ff:ff:ff:ff:ff:ff',
+                    'inet 10.11.12.84/22 brd 10.11.12.255 scope global',
+                    'valid_lft 20343sec preferred_lft 20343sec',
+                    'inet6 2620:52:0::fe01:3f1c/64 scope global dynamic',
+                    'valid_lft 2591620sec preferred_lft 604420sec',
+                    'inet6 fe80::4aff:fe01:3f1c/64 scope link ',
+                    'valid_lft forever preferred_lft forever',
+                ]
+            ),
+            ''
+        ),
+        'ip -6 addr show eth0': (
+            0,
+            '\n'.join(
+                [
+                    '2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu ...',
+                    'link/ether 00:1a:4a:01:3f:1c brd ff:ff:ff:ff:ff:ff',
+                    'inet6 2620:52:0::fe01:3f1c/64 scope global dynamic',
+                    'valid_lft 2591620sec preferred_lft 604420sec',
+                    'inet6 fe80::4aff:fe01:3f1c/64 scope link ',
+                    'valid_lft forever preferred_lft forever',
                 ]
             ),
             ''
@@ -200,6 +243,16 @@ class TestNetwork(object):
     def test_get_mac_address_by_ip(self):
         expected = "44:1e:a1:73:3c:98"
         assert get_host().network.get_mac_by_ip("10.11.12.83") == expected
+
+    def test_find_ip_by_int(self):
+        assert get_host().network.find_ip_by_int("eth0") == "10.11.12.84"
+
+    def test_find_ipv6_by_int(self):
+        expected = "2620:52:0::fe01:3f1c"
+        assert get_host().network.find_ipv6_by_int("eth0") == expected
+
+    def test_find_default_gwv6(self):
+        assert get_host().network.find_default_gwv6() == "fe80::0:3fe"
 
     def if_up(self):
         assert get_host().network.if_up("interface")
