@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 import pytest
 import netaddr
 from rrmngmnt import common

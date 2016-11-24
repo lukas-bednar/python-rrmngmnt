@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 from rrmngmnt import Host, User
 from .common import FakeExecutor
 import rrmngmnt.package_manager as pm
