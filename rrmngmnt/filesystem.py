@@ -87,6 +87,18 @@ class FileSystem(Service):
         full_path = os.path.join(path, file_name)
         return self.host.run_command(['touch', full_path])[0] == 0
 
+    def flush_file(self, file_path):
+        """
+        Flushes the file.
+
+        :param file_path: The path of file to flush.
+        :type file_path: str
+        :returns: True if truncated, False otherwise
+        :rtype: bool
+        """
+        cmd = ["truncate", "-s", "0", file_path]
+        return self.host.run_command(cmd)[0] == 0
+
     def read_file(self, path):
         """
         Reads a content of a file in a given path

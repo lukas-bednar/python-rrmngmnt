@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 import pytest
 
 from rrmngmnt import Host, User
@@ -60,6 +60,7 @@ class TestFilesystem(object):
         'mount -v /not/device /path/to/tmpdir': (
             32, '', '/not/device is not a block device\n'
         ),
+        'truncate -s 0 /tmp/file_to_flush': (0, '', ''),
     }
     files = {}
 
@@ -103,6 +104,9 @@ class TestFilesystem(object):
 
     def test_read_file(self):
         assert self.get_host().fs.read_file("/tmp/file") == "data"
+
+    def test_flush_file(self):
+        assert self.get_host().fs.flush_file("/tmp/file_to_flush")
 
     def test_create_sctript(self):
         data = "echo hello"
