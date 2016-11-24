@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 from rrmngmnt import Host
 from rrmngmnt.service import SysVinit, Systemd, InitCtl
 from .common import FakeExecutor
