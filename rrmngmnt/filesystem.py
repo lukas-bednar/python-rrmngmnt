@@ -112,6 +112,20 @@ class FileSystem(Service):
         rc, out, _ = self.host.run_command(cmd)
         return out if not rc else ""
 
+    def move(self, source_path, destination_path):
+        """
+        Moves a file or directory from source to destination.
+
+        :param source_path: The source path to move from.
+        :type source_path: str
+        :param destination_path: The destination path to move to.
+        :type destination_path: str
+        :return: True if there were no errors, False otherwise.
+        :rtype: bool
+        """
+        cmd = ["mv", source_path, destination_path]
+        return self.host.run_command(cmd)[0] == 0
+
     def create_script(self, content, path):
         """
         Create script on filesystem, and make it executable.

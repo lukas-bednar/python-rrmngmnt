@@ -61,6 +61,7 @@ class TestFilesystem(object):
             32, '', '/not/device is not a block device\n'
         ),
         'truncate -s 0 /tmp/file_to_flush': (0, '', ''),
+        'mv /tmp/source /tmp/destination': (0, '', ''),
     }
     files = {}
 
@@ -104,6 +105,9 @@ class TestFilesystem(object):
 
     def test_read_file(self):
         assert self.get_host().fs.read_file("/tmp/file") == "data"
+
+    def test_move(self):
+        assert self.get_host().fs.move("/tmp/source", "/tmp/destination")
 
     def test_flush_file(self):
         assert self.get_host().fs.flush_file("/tmp/file_to_flush")
