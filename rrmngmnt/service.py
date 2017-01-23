@@ -1,4 +1,5 @@
 from rrmngmnt.resource import Resource
+import re
 
 
 class Service(Resource):
@@ -169,6 +170,11 @@ class Systemd(SystemService):
 
     def _can_handle(self):
         super(Systemd, self)._can_handle()
+
+        orig_name = self.name
+        if "@" in self.name:
+            self.name = re.match(r'^.*@', self.name).group(0)
+
         cmd = (
             'systemctl', 'list-unit-files', '|',
             'grep', '-o', '^[^.][^.]*.service', '|',
@@ -180,8 +186,9 @@ class Systemd(SystemService):
         out = out.strip().splitlines()
         if rc or self.name not in out:
             raise self.CanNotHandle(
-                "%s is not listed in %s" % (self.name, out)
+                "%s is not listed in %s" % (orig_name, out)
             )
+        self.name = orig_name
 
     def _execute(self, action):
         cmd = [
