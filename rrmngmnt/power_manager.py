@@ -62,7 +62,9 @@ class SSHPowerManager(PowerManager):
         try:
             t_command = list(command)
             t_command += args
-            self.host.executor().run_cmd(t_command)
+            self.host.executor().run_cmd(
+                t_command, tcp_timeout=20, io_timeout=20
+            )
         except socket.timeout as e:
             self.logger.debug("Socket timeout: %s", e)
         except Exception as e:
