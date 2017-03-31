@@ -5,7 +5,7 @@ from rrmngmnt import common
 
 
 def test_fqdn2ip_positive():
-    ip = common.fqdn2ip('github.org')
+    ip = common.fqdn2ip('github.com')
     assert netaddr.valid_ipv4(ip)
 
 
