@@ -20,6 +20,7 @@ from rrmngmnt.resource import Resource
 from rrmngmnt.filesystem import FileSystem
 from rrmngmnt.package_manager import PackageManagerProxy
 from rrmngmnt.operatingsystem import OperatingSystem
+from utilities import utils
 
 
 class Host(Resource):
@@ -475,3 +476,62 @@ class Host(Resource):
             "Use Host.executor().is_connective() instead."
         )
         return self.executor().is_connective(tcp_timeout=tcp_timeout)
+
+    def set_iptables(
+        self, source, command, chain, dest, target, protocol='all', ports=None
+    ):
+        """
+        Changes iptables configuration
+
+        Args:
+            source (str): source host
+            command (str): action to perform
+            chain (str): affected chain name
+            dest (dict): 'address' key and value containing destination host or
+                list of destination hosts
+            target (str): target rule to apply
+            protocol (str): affected network protocol, Default is 'all'
+            ports (list): list of ports to configure
+
+        Returns:
+            bool: True if configuration change successed, False otherwise
+
+        Raises:
+            NotImplementedError: In case chain parameter is not supported or if
+                the users specifies more than 15 ports to block
+
+        Example:
+            set_iptables(source=vds_host, command='--append', chain='OUTPUT',
+                dest={'address': nfs_server}, target='DROP'
+        """
+
+        chain = chain.upper()
+        cmd = ['/sbin/iptables', command, chain]
+        if chain == 'INPUT':
+            cmd.append('--source')
+        elif chain == 'OUTPUT':
+            cmd.append('--destination')
+        else:  # FORWARD chain isn't supported
+            raise NotImplementedError("only INPUT/OUTPUT chains are supported")
+
+        dest = ",".join(dest['address'])
+
+        cmd.extend(
+            [dest, '--jump', target.upper(), '--protocol', protocol]
+        )
+
+        if ports:
+            if len(ports) > 15:  # Up to 15 ports can be specified
+                raise NotImplementedError("Up to 15 ports can be specified")
+            ports = ",".join(ports)
+
+            if protocol.lower() == 'all':
+                # Adjust the protocol type, '--dports' option requires specific
+                # type
+                cmd = utils.updateList(cmd, protocol, 'tcp')
+
+            cmd.extend(['--match', 'multiport', '--dports', ports])
+
+        rc = self.run_command(cmd)[0]
+
+        return not rc
