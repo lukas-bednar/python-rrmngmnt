@@ -81,8 +81,8 @@ class Executor(Resource):
 
     def __init__(self, user):
         """
-        :param user: user
-        :type user: instance of user
+        Args:
+            user (User): user
         """
         super(Executor, self).__init__()
         self.user = user
@@ -92,10 +92,9 @@ class Executor(Resource):
 
     def run_cmd(self, cmd, input_=None):
         """
-        :param cmd: command
-        :type cmd: list
-        :param input_: input data
-        :type input_: str
+        Args:
+            cmd (list): command
+            input_(str): input data
         """
         with self.session() as session:
             return session.run_cmd(cmd, input_)

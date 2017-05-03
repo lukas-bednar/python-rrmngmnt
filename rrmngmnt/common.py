@@ -5,10 +5,11 @@ def fqdn2ip(fqdn):
     """
     translate fqdn to IP
 
-    :param fqdn: host name
-    :type fqdn: string
-    :return: IP
-    :rtype: string
+    Args:
+        fqdn (str): host name
+
+    Returns:
+        str: IP address
     """
     try:
         return socket.gethostbyname(fqdn)

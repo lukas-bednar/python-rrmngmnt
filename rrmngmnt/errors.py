@@ -10,14 +10,11 @@ class CommandExecutionFailure(GeneralResourceError):
     """
     def __init__(self, executor, cmd, rc, err):
         """
-        :param executor: executor used for execution
-        :type executor: instance of RemoteExecutor
-        :param cmd: executed command
-        :type cmd: list
-        :param rc: return code
-        :type rc: int
-        :param err: standard error output if provided
-        :type err: string
+        Args:
+            executor (RemoteExecutor): executor used for execution
+            cmd (list): executed command
+            rc (int): return code
+            err (str): standard error output if provided
         """
         super(CommandExecutionFailure, self).__init__(executor, cmd, rc, err)
 
@@ -51,12 +48,10 @@ class UnsupportedOperation(GeneralResourceError):
     """
     def __init__(self, host, operation, reason):
         """
-        :param host: relevant host
-        :type host: instance of Host
-        :param operation: name of unsupported operation
-        :type operation: str
-        :param reason: message
-        :type message: str
+        Args:
+            host (Host): relevant host
+            operation (str): name of unsupported operation
+            reason (str): message
         """
         super(UnsupportedOperation, self).__init__(host, operation, reason)
 

@@ -55,10 +55,9 @@ class Host(Resource):
 
     def __init__(self, ip, service_provider=None):
         """
-        :param ip: IP address of machine or resolvable FQDN
-        :type ip: string
-        :param service_provider: system service handler
-        :type service_provider: class which implement SystemService interface
+        Args:
+            ip (str): IP address of machine or resolvable FQDN
+            service_provider (Service): system service handler
         """
         super(Host, self).__init__()
         if not netaddr.valid_ipv4(ip) and not netaddr.valid_ipv6(ip):
@@ -79,10 +78,12 @@ class Host(Resource):
     def get(cls, ip):
         """
         Get host from inventory
-        :param ip: IP address of machine or resolvable FQDN
-        :type ip: str
-        :return: host
-        :rtype: Host
+
+        Args:
+            ip (str): IP address of machine or resolvable FQDN
+
+        Returns:
+            Host: host instance
         """
         host = [h for h in cls.inventory if h.ip == ip or h.fqdn == ip]
         if not host:
@@ -111,10 +112,10 @@ class Host(Resource):
         """
         Add power power manager to host
 
-        :param pm_type: power manager type(power_manager.SSH_TYPE for example)
-        :type pm_type: str
-        :param init_params: power manager init parameters
-        :type init_params: dict
+        Args:
+            pm_type (str): power manager type
+                (power_manager.SSH_TYPE for example)
+            init_params (dict): power manager init parameters
         """
         self._power_managers[pm_type] = getattr(
             power_manager, power_manager.MANAGERS[pm_type]
@@ -124,11 +125,15 @@ class Host(Resource):
         """
         Get host power manager
 
-        :param pm_type: power manager type(power_manager.SSH_TYPE for example)
-        :type pm_type: str
-        :return: instance of PowerManager
-        :rtype: PowerManager
-        :raises: Exception
+        Args:
+            pm_type (str): power manager type(power_manager.SSH_TYPE for
+                example)
+
+        Returns:
+            PowerManager: instance of powermanager
+
+        Raises:
+            Exception: If power manager not supported
         """
         if self._power_managers:
             if pm_type:
@@ -154,8 +159,8 @@ class Host(Resource):
         """
         Adds user to users collection, and tries remove duplicities.
 
-        :param user: user to add
-        :type user: instance of rrmngmnt.User
+        Args:
+            user (User): user to add
         """
         for u in self.users[:]:
             if user.get_full_name() == u.get_full_name():
@@ -165,11 +170,10 @@ class Host(Resource):
     def _set_executor_user(self, user):
         """
         This method explicitly set user which is used to execute commands
-        on host.
-        And adds user into users collection.
+        on host. And adds user into users collection.
 
-        :param user: specific user
-        :type user: instance of rrmngmnt.User
+        Args:
+            user (User): specific user
         """
         self._executor_user = user
         self.add_user(user)
@@ -178,8 +182,8 @@ class Host(Resource):
         """
         The user which is supposed to be used for command execution.
 
-        :return: user
-        :rtype: instance of rrmngmnt.User
+        Returns:
+            user: instance of User
         """
         if self._executor_user:
             return copy.copy(self._executor_user)
@@ -207,9 +211,10 @@ class Host(Resource):
         """
         Gives you executor to allowing command execution
 
-        :param user: the executed commands will be executed under this user.
-                     when it is None, the default executor user is used,
-                     see set_executor_user method for more info.
+        Args:
+            user (User): the executed commands will be executed under this
+                user. when it is None, the default executor user is used,
+                see set_executor_user method for more info.
         """
         if user is None:
             user = self.executor_user
@@ -222,16 +227,14 @@ class Host(Resource):
         """
         Run command on host
 
-        :param command: command
-        :type command: list
-        :param input_: input data
-        :type input_: str
-        :param tcp_timeout: tcp timeout
-        :type tcp_timeout: float
-        :param io_timeout: timeout for data operation (read/write)
-        :type io_timeout: float
-        :return: tuple of (rc, out, err)
-        :rtype: tuple
+        Args:
+            command (list): command
+            input_ (str): input data
+            tcp_timeout (float): tcp timeout
+            `io_timeout (float): timeout for data operation (read/write)
+
+        Returns:
+            tuple: tuple of (rc, out, err)
         """
         self.logger.info("Executing command %s", ' '.join(command))
         rc, out, err = self.executor(user=user, pkey=pkey).run_cmd(
@@ -248,16 +251,12 @@ class Host(Resource):
         """
         Copy to host from another resource
 
-        :param resource: resource to copy from
-        :type resource: instance of Host
-        :param src: path to source
-        :type src: str
-        :param dst: path to destination
-        :type dst: str
-        :param mode: file permissions
-        :type mode: str
-        :param ownership: file ownership(ex. ('root', 'root'))
-        :type ownership: tuple
+        Args:
+            src (str): Path to source
+            dst (str): Path to destination
+            resource (instance of Host): Resource to copy from
+            mode (str): File permissions
+            ownership (tuple): File ownership(ex. ('root', 'root'))
         """
         warnings.warn(
             "This method is deprecated and will be removed. "
@@ -298,12 +297,13 @@ class Host(Resource):
         """
         Create service provider for desired service
 
-        :param name: service name
-        :type name: string
-        :param timeout: expected time to complete operations
-        :type timeout: int
-        :return: service provider for desired service
-        :rtype: instance of SystemService
+        :Args:
+            name (string): Service name
+            timeout (int): Expected time to complete operations
+
+        Returns:
+            instance of SystemService: Service provider for desired service
+
         """
         if self._service_provider is None:
             # we need to pick up service provider,
@@ -325,10 +325,13 @@ class Host(Resource):
         """
         Get SSH public key
 
-        :param user: what user to get ssh keys for, default is root
-        :type user: instance of rrmngmnt.User
-        :return: SSH public key
-        :rtype: str
+        Args:
+            user (instance of rrmngmnt.User): What user to get ssh keys for,
+                default is root
+
+        Returns:
+            str: Ssh public key
+
         """
         if user is None:
             user = copy.copy(self.root_user)
@@ -355,12 +358,13 @@ class Host(Resource):
         """
         Remove remote host keys (ip, fqdn) from KNOWN_HOSTS file
 
-        :param remote_host: Remote host resource object
-        :type remote_host: Host
-        :param user: what user to remove ssh keys for, default is root
-        :type user: instance of rrmngmnt.User
-        :return: True/False
-        :rtype: bool
+        Args:
+            remote_host (Host): Remote host resource object
+            user (instance of rrmngmnt.User): What user to remove ssh keys for,
+                default is root
+
+        Returns:
+            bool: True/false
         """
         if user is None:
             user = copy.copy(self.root_user)
@@ -380,10 +384,12 @@ class Host(Resource):
         """
         Remove remote ssh key from AUTHORIZED_KEYS file
 
-        :param user: what user to remove from authorized_keys, default is root
-        :type user: instance of rrmngmnt.User
-        :return: True/False
-        :rtype: bool
+        Args:
+            user (instance of rrmngmnt.User): What user to remove from
+                authorized_keys, default is root
+
+        Returns:
+            bool: True/false
         """
         if user is None:
             user = copy.copy(self.root_user)
@@ -401,12 +407,15 @@ class Host(Resource):
         """
         Get OS info (Distro, version and code name)
 
-        :return: Results {dist: , ver: , name:}
-            example:
-            {'dist': 'Red Hat Enterprise Linux Server',
+        Returns:
+            dict: Results {dist: , ver: , name:}
+
+        Examples:
+            {
+             'dist': 'Red Hat Enterprise Linux Server',
              'name': 'Maipo',
-             'ver': '7.1'}
-        :rtype: dict
+             'ver': '7.1'
+             }
         """
         warnings.warn(
             "This method is deprecated and will be removed. "
@@ -455,15 +464,14 @@ class Host(Resource):
         """
         Create script on resource
 
-        :param content: content of the script
-        :type content: str
-        :param name_of_script: name of script to create
-        :type name_of_script: str
-        :param destination_path: directory on host to copy script
-        :type destination_path: str
-        :returns: Script absolute path, if creation success,
-        otherwise empty string
-        :rtype: str
+        Args:
+            content (str): Content of the script
+            name_of_script (str): Name of script to create
+            destination_path (str): Directory on host to copy script
+
+        Returns:
+            str: Script absolute path, if creation success, otherwise empty
+                string
         """
         warnings.warn(
             "This method is deprecated and will be removed. "
@@ -480,10 +488,11 @@ class Host(Resource):
         """
         Check if host is connective via ssh
 
-        :param tcp_timeout: time to wait for response
-        :type tcp_timeout: float
-        :return: True if host is connective, False otherwise
-        :rtype: bool
+        Args:
+            tcp_timeout (float): Time to wait for response
+
+        Returns:
+            bool: True if host is connective, false otherwise
         """
         warnings.warn(
             "This method is deprecated and will be removed. "

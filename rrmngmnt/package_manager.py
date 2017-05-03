@@ -30,10 +30,11 @@ class PackageManager(Service):
         """
         Run given command on host
 
-        :param cmd: command to run
-        :type cmd: list
-        :return: True, if command success, otherwise False
-        :rtype: bool
+        Args:
+            cmd (list): Command to run
+
+        Returns:
+            bool: True, if command success, otherwise false
         """
         self.logger.info(
             "Execute command '%s' on host %s", " ".join(cmd), self.host
@@ -51,11 +52,14 @@ class PackageManager(Service):
         """
         Check if package exist on host
 
-        :param package: name of package
-        :type package: str
-        :return: True, if package exist, otherwise False
-        :rtype: bool
-        :raise: NotImplementedError
+        Args:
+            package (str): Name of package
+
+        Returns:
+            bool: True, if package exist, otherwise false
+
+        Raises:
+            NotImplementedError
         """
         if not self.exist_command_d:
             raise NotImplementedError("There is no 'exist' command defined.")
@@ -68,11 +72,13 @@ class PackageManager(Service):
 
     def list_(self):
         """
-        List installled packages on host
+        List installed packages on host
 
-        :return: installed packages
-        :rtype: list
-        :raise: NotImplementedError, CommandExecutionFailure
+        Returns:
+            list: Installed packages
+
+        Raises:
+            NotImplementedError, CommandExecutionFailure
         """
         if not self.list_command_d:
             raise NotImplementedError(
@@ -97,11 +103,14 @@ class PackageManager(Service):
         """
         Install package on host
 
-        :param package: name of package
-        :type package: str
-        :return: True, if package installation success, otherwise False
-        :rtype: bool
-        :raise: NotImplementedError
+        Args:
+            package (str): Name of package
+
+        Returns:
+            bool: True, if package installation success, otherwise false
+
+        Raises:
+            NotImplementedError
         """
         if not self.install_command_d:
             raise NotImplementedError("There is no 'install' command defined.")
@@ -122,13 +131,16 @@ class PackageManager(Service):
         Remove package from host, or packages which match pattern if pattern
         is set to True
 
-        :param package: name of package or extended regular expression pattern
-                        take a look at -E option in man grep
-        :type package: str
-        :param pattern: If True package name is pattern
-        :return: True, if package(s) removal success, otherwise False
-        :rtype: bool
-        :raise: NotImplementedError
+        Args:
+            pattern (bool): If true package name is pattern
+            package (str): Name of package or extended regular expression
+                pattern take a look at -e option in man grep
+
+        Returns:
+            bool: True, if package(s) removal success, otherwise false
+
+        Raises:
+            NotImplementedError
         """
         if not self.remove_command_d:
             raise NotImplementedError("There is no 'remove' command defined.")
@@ -174,11 +186,15 @@ class PackageManager(Service):
         if no packages are specified
 
         __author__ = "omachace"
-        :param packages: Packages to be updated, if empty, update system
-        :type packages: list
-        :return: True when updates succeed, False otherwise
-        :rtype: bool
-        :raise: NotImplementedError
+
+        Args:
+            packages (list): Packages to be updated, if empty, update system
+
+        Returns:
+            bool: True when updates succeed, false otherwise
+
+        Raises:
+            NotImplementedError
         """
         if not self.update_command_d:
             raise NotImplementedError("There is no 'update' command defined.")

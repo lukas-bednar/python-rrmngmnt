@@ -202,12 +202,10 @@ class RemoteExecutor(Executor):
 
     def __init__(self, user, address, use_pkey=False):
         """
-        :param user: user
-        :type user: instance of User
-        :param address: ip / hostname
-        :type address: str
-        :param use_pkey: use ssh private key in the connection
-        :type use_pkey: bool
+        Args:
+            use_pkey (bool): Use ssh private key in the connection
+            user (instance of User): User
+            address (str): Ip / hostname
         """
         super(RemoteExecutor, self).__init__(user)
         self.address = address
@@ -215,25 +213,24 @@ class RemoteExecutor(Executor):
 
     def session(self, timeout=None):
         """
-        :param timeout: tcp timeout
-        :type timeout: float
-        :return: the session
-        :rtype: instance of RemoteExecutor.Session
+        Args:
+            timeout (float): Tcp timeout
+
+        Returns:
+            instance of RemoteExecutor.Session: The session
         """
         return RemoteExecutor.Session(self, timeout, self.use_pkey)
 
     def run_cmd(self, cmd, input_=None, tcp_timeout=None, io_timeout=None):
         """
-        :param cmd: command
-        :type cmd: list
-        :param input_: input data
-        :type input_: str
-        :param tcp_timeout: tcp timeout
-        :type tcp_timeout: float
-        :param io_timeout: timeout for data operation (read/write)
-        :type io_timeout: float
-        :return: rc, out, err
-        :rtype: tuple (int, str, str)
+        Args:
+            tcp_timeout (float): Tcp timeout
+            cmd (list): Command
+            input_ (str): Input data
+            io_timeout (float): Timeout for data operation (read/write)
+
+        Returns:
+            tuple (int, str, str): Rc, out, err
         """
         with self.session(tcp_timeout) as session:
             return session.run_cmd(cmd, input_, io_timeout)
@@ -242,10 +239,11 @@ class RemoteExecutor(Executor):
         """
         Check if address is connective via ssh
 
-        :param tcp_timeout: time to wait for response
-        :type tcp_timeout: float
-        :return: True if address is connective, False otherwise
-        :rtype: bool
+        Args:
+            tcp_timeout (float): Time to wait for response
+
+        Returns:
+            bool: True if address is connective, false otherwise
         """
         try:
             self.logger.info(
@@ -268,15 +266,14 @@ class RemoteExecutor(Executor):
         """
         Wait until address will be connective or not via ssh
 
-        :param positive: wait for the positive or negative connective state
-        :type positive: bool
-        :param timeout: wait timeout
-        :type timeout: int
-        :param sample_time: sample the ssh each sample_time seconds
-        :type sample_time: int
-        :return: True, if positive and ssh is connective or
-        negative and ssh does not connective, otherwise False
-        :rtype: bool
+        Args:
+            positive (bool): Wait for the positive or negative connective state
+            timeout (int): Wait timeout
+            sample_time (int): Sample the ssh each sample_time seconds
+
+        Returns:
+            bool: True, if positive and ssh is connective or negative and ssh
+                does not connective, otherwise false
         """
         reachable = "unreachable" if positive else "reachable"
         timeout_counter = 0

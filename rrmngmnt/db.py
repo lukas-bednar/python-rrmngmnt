@@ -5,12 +5,10 @@ class Database(Service):
 
     def __init__(self, host, name, user):
         """
-        :param host: Remote resouce to DB machine
-        :type host: instance of Host
-        :param name: database name
-        :type name: str
-        :param user: user/role
-        :type user: instance of User
+        Args:
+            host (Host): Remote resouce to DB machine
+            name (str): database name
+            user (User): user/role
         """
         super(Database, self).__init__(host)
         self.name = name
@@ -20,12 +18,12 @@ class Database(Service):
         """
         Execute psql command on host
 
-        :param sql: sql command
-        :type sql: string
-        :param args: positional format arguments for command
-        :type args: list of arguments
-        :return: list of lines with records
-        :rtype: list(list(string, string, ...))
+        Args:
+            sql (str): sql command
+            args (list): positional format arguments for command
+
+        Returns:
+            list: list of lines with records.
         """
         separator = '__RECORD_SEPARATOR__'
         sql = sql % tuple(args)
@@ -48,7 +46,10 @@ class Database(Service):
         ]
         # NOTE: I am considering to use Psycopg2 to access DB directly.
         # I need to think whether it is better or not.
-        # We need to realize that connection can be forbiden from outside ...
+        # We need to realize that connection can be forbidden from outside ...
 
     def restart(self):
+        """
+        Restart postgresql service
+        """
         self.host.service('postgresql').restart()

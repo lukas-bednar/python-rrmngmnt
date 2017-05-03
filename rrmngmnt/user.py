@@ -4,10 +4,9 @@ from rrmngmnt.resource import Resource
 class User(Resource):
     def __init__(self, name, password):
         """
-        :param name: user name
-        :type name: str
-        :param password: password
-        :type password: str
+        Args:
+            password (str): Password
+            name (str): User name
         """
         super(User, self).__init__()
         self.name = name
@@ -31,12 +30,10 @@ class RootUser(User):
 class Domain(Resource):
     def __init__(self, name, provider=None, server=None):
         """
-        :param name: name of domain
-        :type name: str
-        :param provider: name of provider / type of domain
-        :type provider: str
-        :param server: server address
-        :type server: str
+        Args:
+            server (str): Server address
+            name (str): Name of domain
+            provider (str): Name of provider / type of domain
         """
         super(Domain, self).__init__()
         self.name = name
@@ -54,12 +51,10 @@ class InternalDomain(Domain):
 class ADUser(User):
     def __init__(self, name, password, domain):
         """
-        :param name: user name
-        :type name: str
-        :param password: password
-        :type password: str
-        :param domain: user domain
-        :type domain: instance of Domain
+        Args:
+            domain (instance of Domain): User domain
+            password (str): Password
+            name (str): User name
         """
         super(ADUser, self).__init__(name, password)
         self.domain = domain

@@ -45,7 +45,8 @@ class OperatingSystem(Service):
 
         It might raise exception in case the systemd is not deployed on system.
 
-        :raises: UnsupportedOperation
+        Raises:
+            UnsupportedOperation
         """
         os_release_file = '/etc/os-release'
         cmd = ['cat', os_release_file]
@@ -85,14 +86,16 @@ class OperatingSystem(Service):
         """
         Get OS info (Distro, version and code name)
 
-        :return: Results tuple(distname, version, id}
-            example:
-            Distribution(
-              distname='Red Hat Enterprise Linux Server',
-              id='Maipo',
-              version'='7.1'
-            )
-        :rtype: namedtuple Distribution
+        Returns:
+            namedtuple Distribution: Results tuple(distname, version, id}
+
+        Examples:
+             distribution(
+                    distname='red hat enterprise linux server',
+                    id='maipo',
+                    version'='7.1'
+                    )
+
         """
         values = ["distname", "version", "id"]
         cmd = [
@@ -115,8 +118,8 @@ class OperatingSystem(Service):
         """
         Get file or directory stats
 
-        :return: file stats
-        :rtype: collections.namedtuple
+        Returns:
+            collections.namedtuple: File stats
         """
         type_map = {
             'st_mode': ('0x%f', lambda x: int(x, 16)),
@@ -158,8 +161,8 @@ class OperatingSystem(Service):
         """
         Get file permissions
 
-        :return: file permission in octal form(example 0644)
-        :rtype: str
+        Returns:
+            str: File permission in octal form(example 0644)
         """
         cmd = ["stat", "-c", "%a", path]
         return self._exec_command(cmd=cmd).strip()
@@ -168,8 +171,8 @@ class OperatingSystem(Service):
         """
         Get file user and group owner name
 
-        :return: file user and group owner names(example ['root', 'root'])
-        :rtype: list
+        Returns:
+            list: File user and group owner names(example ['root', 'root'])
         """
         cmd = ["stat", "-c", "%U %G", path]
         return self._exec_command(cmd=cmd).split()
@@ -178,10 +181,11 @@ class OperatingSystem(Service):
         """
         Check if user exist on system
 
-        :param user_name: user name
-        :type user_name: str
-        :return: True, if user exist, otherwise False
-        :rtype: bool
+        Args:
+            user_name (str): User name
+
+        Returns:
+            bool: True, if user exist, otherwise false
         """
         try:
             cmd = ["id", "-u", user_name]
@@ -191,13 +195,15 @@ class OperatingSystem(Service):
         return True
 
     def group_exists(self, group_name):
-        """"
+        """
         Check if group exist on system
 
-        :param group_name: group name
-        :type group_name: str
-        :return: True, if group exist, otherwise False
-        :rtype: bool
+        Args:
+            group_name (str): Group name
+
+        Returns:
+            bool: True, if group exist, otherwise false
+
         """
         try:
             cmd = ["id", "-g", group_name]

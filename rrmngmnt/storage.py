@@ -17,16 +17,15 @@ class NFSService(Service):
         Mounts source to target mount point
 
         __author__ = "ratamir"
-        :param source: Full path to source
-        :type source: str
-        :param target: Path to target directory, if omitted, a temporary
-        folder is created instead
-        :type target: str
-        :param opts: List of mount options such as:
-        ['-t', 'nfs', '-o', 'vers=3']
-        :type opts: list
-        :return: Path to mount point if succeeded, None otherwise
-        :rtype: str
+
+        Args:
+            source (str): Full path to source
+            target (str): Path to target directory, if omitted, a temporary
+                folder is created instead
+            opts (list): List of mount options such as
+
+        Returns:
+            str: Path to mount point if succeeded, none otherwise
         """
         target = '/tmp/mnt_point' if target is None else target
         cmd = ['mkdir', '-p', target]
@@ -59,17 +58,17 @@ class NFSService(Service):
         optionally removes 'mount_point'
 
         __author__ = "ratamir"
-        :param mount_point: Path to directory that should be unmounted
-        :type mount_point: str
-        :param force: True if the mount point should be forcefully removed
-        (such as in the case of an unreachable NFS server)
-        :type force: bool
-        :param remove_mount_point: True if mount point should be deleted
-        after 'umount' operation completes, False otherwise
-        :type remove_mount_point: bool
-        :return: True if umount operation and mount point removal
-        succeeded, False otherwise
-        :rtype: bool
+
+        Args:
+            mount_point (str): Path to directory that should be unmounted
+            force (bool): True if the mount point should be forcefully removed
+                (such as in the case of an unreachable nfs server)
+            remove_mount_point (bool): True if mount point should be deleted
+                after 'umount' operation completes, false otherwise
+
+        Returns:
+            bool: True if umount operation and mount point removal succeeded,
+                false otherwise
         """
         cmd = ['umount', mount_point, '-v']
         if force:
@@ -99,17 +98,18 @@ class LVMService(Service):
         (by setting it's 'active' attribute)
 
         __author__ = "ratamir"
-        :param vg_name: The name of the Volume group under which the LV resides
-        :type vg_name: str
-        :param lv_name: The name of the logical volume which will be
-        activated or deactivated
-        :type lv_name: str
-        :param activate: True when the logical volume should be activated,
-        False when it should be deactivated
-        :type activate: bool
-        :returns: True if setting the logical volume 'active' flag
-        succeeded, False otherwise
-        :rtype: bool
+
+        Args:
+            activate (bool): True when the logical volume should be activated,
+                false when it should be deactivated
+            vg_name (str): The name of the volume group under which the lv
+                resides
+            lv_name (str): The name of the logical volume which will be
+                activated or deactivated
+
+        Returns:
+            bool: True if setting the logical volume 'active' flag succeeded,
+                false otherwise
         """
         active = 'y' if activate else 'n'
         return self.host.run_command(
@@ -121,7 +121,8 @@ class LVMService(Service):
         Execute 'pvscan' in order to get the current list of physical volumes
 
         __author__ = "ratamir"
-        :returns: True if the pvscan command succeded, False otherwise
-        :rtype: bool
+
+        Returns:
+            bool: True if the pvscan command succeded, false otherwise
         """
         return self.host.run_command(['pvscan'])[0] == 0

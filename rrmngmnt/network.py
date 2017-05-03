@@ -61,8 +61,9 @@ class HostnameHandler(object):
     def get_hostname(self):
         """
         Get hostname
-        :return: hostname
-        :rtype: string
+
+        Returns:
+            str: Hostname
         """
         rc, out, _ = self._m.runCmd(['hostname', '-f'])
         if rc:
@@ -73,8 +74,9 @@ class HostnameHandler(object):
     def set_hostname(self, name):
         """
         Set hostname persistently
-        :param name: hostname to be set
-        :type name: string
+
+        Args:
+            name (str): Hostname to be set
         """
         net_config = '/etc/sysconfig/network'
         cmd = [
@@ -99,8 +101,9 @@ class HostnameCtlHandler(HostnameHandler):
     def get_hostname(self):
         """
         Get hostname
-        :return: hostname
-        :rtype: string
+
+        Returns:
+            str: Hostname
         """
         cmd = [
             'hostnamectl', 'status', '|',
@@ -117,8 +120,9 @@ class HostnameCtlHandler(HostnameHandler):
     def set_hostname(self, name):
         """
         Set hostname persistently
-        :param name: hostname to be set
-        :type name: string
+
+        Args:
+            name (str): Hostname to be set
         """
         cmd = ['hostnamectl', 'set-hostname', name]
         rc, _, err = self._m.runCmd(cmd)
@@ -177,8 +181,8 @@ class Network(Service):
         """
         Lists interfaces
 
-        :return: list of interfaces
-        :rtype: list of strings
+        Returns:
+            list of strings: List of interfaces
         """
         out = self._cmd(
             "ls -la /sys/class/net | grep 'dummy_\|pci' | grep -o '["
@@ -193,8 +197,8 @@ class Network(Service):
         """
         Find host default gateway
 
-        :return: default gateway
-        :rtype: string
+        Returns:
+            str: Default gateway
         """
         out = self._cmd(["ip", "route"]).splitlines()
         for i in out:
@@ -209,8 +213,8 @@ class Network(Service):
         """
         Find host default ipv6 gateway
 
-        :return: default gateway
-        :rtype: string
+        Returns:
+            str: Default gateway
         """
         out = self._cmd(["ip", "-6", "route"]).splitlines()
         for i in out:
@@ -227,8 +231,9 @@ class Network(Service):
         """
         Find host IPs
 
-        :return: list of ips and list of cird ips
-        :rtype: tuple(list of strings, list of strings)
+        Returns:
+            tuple(list of strings, list of strings): List of ips and list of
+                cird ips
         """
         ips = []
         ip_and_netmask = []
@@ -247,12 +252,13 @@ class Network(Service):
         """
         Find IP by default gateway
 
-        :param default_gw: default gw of the host
-        :type default_gw: string
-        :param ips_and_mask: list of host ips with mask x.x.x.x/xx
-        :type ips_and_mask: list of strings
-        :return: ip
-        :rtype: string
+        Args:
+            ips_and_mask (list of strings): List of host ips with
+                mask x.x.x.x/xx
+            default_gw (str): Default gw of the host
+
+        Returns:
+            str: Ip
         """
         dgw = netaddr.IPAddress(default_gw)
         for ip_mask in ips_and_mask:
@@ -267,10 +273,11 @@ class Network(Service):
         """
         Find host interface or bridge by IP
 
-        :param ip: ip of the interface to find
-        :type ip: string
-        :return: interface
-        :rtype: string
+        Args:
+            ip (str): Ip of the interface to find
+
+        Returns:
+            str: Interface
         """
         out = self._cmd(["ip", "addr", "show", "to", ip])
         return out.split(":")[1].strip()
@@ -280,10 +287,11 @@ class Network(Service):
         """
         Find host ipv4 by interface or Bridge name
 
-        :param interface: interface to get ip from
-        :type interface: string
-        :return: IP or None
-        :rtype: string or None
+        Args:
+            interface (str): Interface to get ip from
+
+        Returns:
+            str or None: Ip or none
         """
         out = self._cmd(["ip", "addr", "show", interface])
         match_ip = re.search(r'[0-9]+(?:\.[0-9]+){3}', out)
@@ -298,10 +306,11 @@ class Network(Service):
         """
         Find host global ipv6 by interface or Bridge name
 
-        :param interface: interface to get ipv6 from
-        :type interface: string
-        :return: IP or None
-        :rtype: string or None
+        Args:
+            interface (str): Interface to get ipv6 from
+
+        Returns:
+            str or None: Ip or none
         """
         out = self._cmd(["ip", "-6", "addr", "show", interface])
         for line in out.splitlines():
@@ -321,10 +330,11 @@ class Network(Service):
         """
         Find host interface by Bridge name
 
-        :param bridge: bridge to get ip from
-        :type bridge: string
-        :return: interface
-        :rtype: string
+        Args:
+            bridge (str): Bridge to get ip from
+
+        Returns:
+            str: Interface
         """
         bridge = self.get_bridge(bridge)
         try:
@@ -340,10 +350,11 @@ class Network(Service):
         """
         Find interfaces MAC by interface name
 
-        :param interfaces: list of interfaces
-        :type interfaces: list of strings
-        :return: list of macs
-        :rtype: list of strings
+        Args:
+            interfaces (list of strings): List of interfaces
+
+        Returns:
+            list of strings: List of macs
         """
         mac_list = list()
         for interface in interfaces:
@@ -357,11 +368,11 @@ class Network(Service):
     @keep_session
     def find_mgmt_interface(self):
         """
-        Find host mgmt interface (interface with IP that lead
-        to default gateway)
+        Find host mgmt interface (interface with IP that lead to default
+        gateway)
 
-        :return: interface
-        :rtype: string
+        Returns:
+            str: Interface
         """
         host_ip = self.find_ips()
         host_dg = self.find_default_gw()
@@ -374,8 +385,8 @@ class Network(Service):
         """
         List of bridges on host
 
-        :return: list of bridges
-        :rtype: list of dict(name, id, stp, interfaces)
+        Returns:
+            list of dict(name, id, stp, interfaces): List of bridges
         """
         bridges = []
         cmd = [
@@ -409,8 +420,8 @@ class Network(Service):
         """
         Find bridge by name
 
-        :return: bridge
-        :rtype: dict(name, id, stp, interfaces)
+        Returns:
+            dict(name, id, stp, interfaces): Bridge
         """
         bridges = [
             bridge for bridge in self.list_bridges()
@@ -425,12 +436,12 @@ class Network(Service):
         """
         Add bridge and add network to the bridge on host
 
-        :param bridge: Bridge name
-        :type bridge: str
-        :param network: Network name
-        :type network: str
-        :return: True/False
-        :rtype: bool
+        Args:
+            bridge (str): Bridge name
+            network (str): Network name
+
+        Returns:
+            bool: True/false
         """
         cmd_add_br = ["brctl", "addbr", bridge]
         cmd_add_if = ["brctl", "addif", bridge, network]
@@ -443,10 +454,11 @@ class Network(Service):
         """
         Add bridge and add network to the bridge on host
 
-        :param bridge: Bridge name
-        :type bridge: str
-        :return: True/False
-        :rtype: bool
+        Args:
+            bridge (str): Bridge name
+
+        Returns:
+            bool: True/false
         """
         cmd_br_down = ["ip", "link", "set", "down", bridge]
         cmd_del_br = ["brctl", "delbr", bridge]
@@ -459,8 +471,8 @@ class Network(Service):
         """
         Get network info for host, return info for main IP.
 
-        :return: network info
-        :rtype: dict
+        Returns:
+            dict: Network info
         """
         net_info = {}
         gateway = self.find_default_gw()
@@ -493,12 +505,10 @@ class Network(Service):
         """
         Create ifcfg file
 
-        :param nic: NIC name
-        :type nic: str
-        :param params: Ifcfg file content
-        :type params: dict
-        :param ifcfg_path: Ifcfg files path
-        :type ifcfg_path: str
+        Args:
+            nic (str): Nic name
+            ifcfg_path (str): Ifcfg files path
+            params (dict): Ifcfg file content
         """
         dst = os.path.join(ifcfg_path, "ifcfg-%s" % nic)
         self.logger.info("Creating %s on %s", dst, self.host.fqdn)
@@ -512,12 +522,12 @@ class Network(Service):
         """
         Delete ifcfg file
 
-        :param nic: NIC name
-        :type nic: str
-        :param ifcfg_path: Ifcfg files path
-        :type ifcfg_path: str
-        :return: True/False
-        :rtype: bool
+        Args:
+            nic (str): Nic name
+            ifcfg_path (str): Ifcfg files path
+
+        Returns:
+            bool: True/false
         """
         dst = os.path.join(ifcfg_path, "ifcfg-%s" % nic)
         logger.info("Delete %s ", dst)
@@ -530,16 +540,14 @@ class Network(Service):
         """
         Send ICMP to destination IP/FQDN
 
-        :param dst: IP/FQDN to send ICMP to
-        :type dst: str
-        :param count: Number of ICMP packets to send
-        :type count: str
-        :param size: Size of the ICMP packet
-        :type size: str
-        :param extra_args: Extra args for ping command
-        :type extra_args: str
-        :return: True/False
-        :rtype: bool
+        Args:
+            count (str): Number of icmp packets to send
+            extra_args (str): Extra args for ping command
+            dst (str): Ip/fqdn to send icmp to
+            size (str): Size of the icmp packet
+
+        Returns:
+            bool: True/false
         """
         cmd = ["ping", dst, "-c", count, "-s", size]
         if size != "1500":
@@ -558,12 +566,12 @@ class Network(Service):
         """
         Set MTU on NICs
 
-        :param nics: List on NICs
-        :type nics: list
-        :param mtu: MTU size
-        :type mtu: str
-        :return: True or raise Exception
-        :rtype: bool or Exception
+        Args:
+            nics (list): List on nics
+            mtu (str): Mtu size
+
+        Returns:
+            bool or Exception: True or raise exception
         """
         base_cmd = "ip link set mtu %s %s"
         for nic in nics:
@@ -575,10 +583,11 @@ class Network(Service):
         """
         Delete interface from host
 
-        :param interface: Interface name
-        :type interface: str
-        :return: True/False
-        :rtype: bool
+        Args:
+            interface (str): Interface name
+
+        Returns:
+            bool: True/false
         """
         cmd = "ip link del %s" % interface
         try:
@@ -593,10 +602,11 @@ class Network(Service):
         """
         Get mac address by ip address
 
-        :param ip: ip address
-        :type ip: str
-        :return: mac address
-        :rtype: str
+        Args:
+            ip (str): Ip address
+
+        Returns:
+            str: Mac address
         """
         interface = self.find_int_by_ip(ip=ip)
         return self.find_mac_by_int([interface])[0]
@@ -605,10 +615,11 @@ class Network(Service):
         """
         Set nic up
 
-        :param nic: NIC name
-        :type nic: str
-        :return: True if setting NIC up succeeded, False otherwise
-        :rtype: bool
+        Args:
+            nic (str): Nic name
+
+        Returns:
+            bool: True if setting nic up succeeded, false otherwise
         """
         cmd = "ip link set up %s" % nic
         rc, _, _ = self.host.run_command(shlex.split(cmd))
@@ -618,10 +629,11 @@ class Network(Service):
         """
         Set nic down
 
-        :param nic: NIC name
-        :type nic: str
-        :return: True if setting NIC down succeeded, False otherwise
-        :rtype: bool
+        Args:
+            nic (str): Nic name
+
+        Returns:
+            bool: True if setting nic down succeeded, false otherwise
         """
         cmd = "ip link set down %s" % nic
         rc, _, _ = self.host.run_command(shlex.split(cmd))
@@ -631,11 +643,12 @@ class Network(Service):
         """
         Check if host network is connective via ping command
 
-        :param ping_timeout: time to wait for response
-        :type ping_timeout: float
-        :return: True if address is connective via ping command,
-            False otherwise
-        :rtype: bool
+        Args:
+            ping_timeout (float): Time to wait for response
+
+        Returns:
+            bool: True if address is connective via ping command, false
+             otherwise
         """
         host_address = self.host.ip
         # Leave it for future support of IPV6

@@ -99,12 +99,10 @@ class IPMIPowerManager(PowerManager):
         """
         Initialize IPMIPowerManagement instance
 
-        :param pm_if_type: ipmi interface type(lan, lanplus)
-        :type pm_if_type: str
-        :param pm_address: power management address
-        :type pm_address: str
-        :param user: instance of User with pm username and password
-        :type user: User
+        Args:
+            pm_if_type (str): Ipmi interface type(lan, lanplus)
+            pm_address (str): Power management address
+            user (User): Instance of user with pm username and password
         """
         super(IPMIPowerManager, self).__init__(h)
         self.pm_if_type = pm_if_type

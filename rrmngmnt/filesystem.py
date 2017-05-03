@@ -59,10 +59,12 @@ class FileSystem(Service):
         Creates files on host
 
         __author__ = "vkondula"
-        :param args: Paths of files to create
-        :type args: list of str
-        :returns: True when file creation succeeds, False otherwise
-        :rtype: bool
+
+        Args:
+            args (list): Paths of files to create
+
+        Returns:
+            bool: True when file creation succeeds, False otherwise
         """
         if len(args) == 2 and self.isdir(args[1]):
             warnings.warn(
@@ -77,12 +79,13 @@ class FileSystem(Service):
         Creates a file on host
 
         __author__ = "ratamir"
-        :param file_name: The file to create
-        :type file_name: str
-        :param path: The path under which the file will be created
-        :type path: str
-        :returns: True when file creation succeeds, False otherwise
-        :rtype: bool
+
+        Args:
+            file_name (str): The file to create
+            path (str): The path under which the file will be created
+
+        Returns:
+            bool: True when file creation succeeds, False otherwise
         """
         full_path = os.path.join(path, file_name)
         return self.host.run_command(['touch', full_path])[0] == 0
@@ -91,10 +94,11 @@ class FileSystem(Service):
         """
         Flushes the file.
 
-        :param file_path: The path of file to flush.
-        :type file_path: str
-        :returns: True if truncated, False otherwise
-        :rtype: bool
+        Args:
+            file_path (str): The path of file to flush.
+
+        Returns:
+            bool: True if truncated, False otherwise
         """
         cmd = ["truncate", "-s", "0", file_path]
         return self.host.run_command(cmd)[0] == 0
@@ -103,10 +107,11 @@ class FileSystem(Service):
         """
         Reads a content of a file in a given path
 
-        :param path: The path from where to take a content from
-        :type path: str
-        :return: Content of a file
-        :rtype: str
+        Args:
+            path (str): The path from where to take a content from
+
+        Returns:
+            str: Content of a file
         """
         cmd = ["cat", path]
         rc, out, _ = self.host.run_command(cmd)
@@ -116,12 +121,12 @@ class FileSystem(Service):
         """
         Moves a file or directory from source to destination.
 
-        :param source_path: The source path to move from.
-        :type source_path: str
-        :param destination_path: The destination path to move to.
-        :type destination_path: str
-        :return: True if there were no errors, False otherwise.
-        :rtype: bool
+        Args:
+            source_path (str): The source path to move from.
+            destination_path (str): The destination path to move to.
+
+        Returns:
+            bool: True if there were no errors, False otherwise.
         """
         cmd = ["mv", source_path, destination_path]
         return self.host.run_command(cmd)[0] == 0
@@ -130,10 +135,9 @@ class FileSystem(Service):
         """
         Create script on filesystem, and make it executable.
 
-        :param content: content of the script
-        :type content: str
-        :param path: path to script to create
-        :type path: str
+        Args:
+            content (str): content of the script
+            path (str): path to script to create
         """
         executor = self.host.executor()
         with executor.session() as session:
@@ -145,9 +149,11 @@ class FileSystem(Service):
         """
         Create directory on host
 
-        :param path: directory path
-        :type path: str
-        :raises: CommandExecutionFailure, if mkdir failed
+        Args:
+            path (str): directory path
+
+        Raises:
+            CommandExecutionFailure: If mkdir failed
         """
         self._exec_command(['mkdir', path])
 
@@ -155,13 +161,13 @@ class FileSystem(Service):
         """
         Change owner of file or directory
 
-        :param path: file or directory path
-        :type path: str
-        :param username: change user owner to username
-        :type username: str
-        :param groupname: change group owner to groupname
-        :type groupname: str
-        :raises: CommandExecutionFailure, if chown failed
+        Args:
+            path (str): file or directory path
+            username (str): change user owner to username
+            groupname (str): change group owner to groupname
+
+        Raises:
+            CommandExecutionFailure: If chown failed
         """
         self._exec_command(['chown', '%s:%s' % (username, groupname), path])
 
@@ -169,11 +175,12 @@ class FileSystem(Service):
         """
         Change permission of directory or file
 
-        :param path: file or directory path
-        :type path: str
-        :param mode: permission mode(600 for example or u+x)
-        :type mode: str
-        :raises: CommandExecutionFailure, if chmod failed
+        Args:
+            path (str): file or directory path
+            mode (str): permission mode(600 for example or u+x)
+
+        Raises:
+            CommandExecutionFailure: If chmod failed
         """
         self._exec_command(['chmod', mode, path])
 
@@ -181,12 +188,12 @@ class FileSystem(Service):
         """
         Fetch file from Host and store on local system
 
-        :param path_src: path to file on remote system
-        :type path_src: str
-        :param path_dst: path to file on local system or directory
-        :type path_dst: str
-        :return: path to destination file
-        :rtype: str
+        Args:
+            path_src (str): path to file on remote system
+            path_dst (str): path to file on local system or directory
+
+        Returns:
+            str: Path to destination file
         """
         if os.path.isdir(path_dst):
             path_dst = os.path.join(path_dst, os.path.basename(path_src))
@@ -200,12 +207,12 @@ class FileSystem(Service):
         """
         Upload file from local system to Host
 
-        :param path_src: path to file on local system
-        :type path_src: str
-        :param path_dst: path to file on remote system or directory
-        :type path_dst: str
-        :return: path to destination file
-        :rtype: str
+        Args:
+            path_src (str): path to file on local system
+            path_dst (str): path to file on remote system or directory
+
+        Returns:
+            str: path to destination file
         """
         if self.isdir(path_dst):
             path_dst = os.path.join(path_dst, os.path.basename(path_src))
@@ -220,14 +227,13 @@ class FileSystem(Service):
         Transfer file from one remote system (self) to other
         remote system (target_host).
 
-        :param path_src: path to file on local system
-        :type path_src: str
-        :param target_host: target system
-        :type target_host: instance of Host
-        :param path_dst: path to file on remote system or directory
-        :type path_dst: str
-        :return: path to destination file
-        :rtype: str
+        Args:
+            path_src (str): path to file on local system
+            target_host (Host): target system
+            path_dst (str): path to file on remote system or directory
+
+        Returns:
+            str: path to destination file
         """
         if target_host.fs.isdir(path_dst):
             path_dst = os.path.join(path_dst, os.path.basename(path_src))
@@ -242,14 +248,13 @@ class FileSystem(Service):
         """
         Download file on the host from given url
 
-        :param url: url to file
-        :type url: str
-        :param output_file: full path to output file
-        :type output_file: str
-        :param progress_handler: progress handler function
-        :type progress_handler: func
-        :return: absolute path to file
-        :rtype: str
+        Args:
+            url (str): url to file
+            output_file (str): full path to output file
+            progress_handler (func): progress handler function
+
+        Returns:
+            str: absolute path to file
         """
         rc = None
         host_executor = self.host.executor()
@@ -276,15 +281,14 @@ class FileSystem(Service):
         """
         Make temporary file
 
-        :param template: template for path, 'X's are replaced
-        :type template: str
-        :param tmpdir: where to create file, if not specified
-            use $TMPDIR if set, else /tmp
-        :type tmpdir: str
-        :param directory: create directory instead of a file
-        :type directory: bool
-        :return: absolute path to file or None if failed
-        :rtype: str
+        Args:
+            template (str): template for path, 'X's are replaced
+            tmpdir (str): where to create file, if not specified
+                use $TMPDIR if set, else /tmp
+            directory (bool): create directory instead of a file
+
+        Returns:
+            str: absolute path to file or None if failed
         """
         cmd = ['mktemp']
         if tmpdir:
@@ -319,18 +323,15 @@ class MountPoint(Resource):
         Mounts source to target mount point
 
         __author__ = "vkondula"
-        :param fs: FileSystem object instance
-        :type fs: FileSystem
-        :param source: Full path to source
-        :type source: str
-        :param target: Path to target directory, if omitted, a temporary
-        folder is created instead
-        :type target: str
-        :param fs_type: File system type
-        :type fs_type: str
-        :param opts: Mount options separated by a comma such as:
-        'sync,rw,guest'
-        :type opts: str
+
+        Args:
+            fs (FileSystem): FileSystem object instance
+            source (str): Full path to source
+            target (str): Path to target directory, if omitted, a temporary
+                folder is created instead
+            fs_type (str): File system type
+            opts (str): Mount options separated by a comma such as:
+                'sync,rw,guest'
         """
         super(MountPoint, self).__init__()
         self.fs = fs
@@ -397,12 +398,11 @@ class MountPoint(Resource):
 
     def remount(self, opts):
         """
-        Remount disk
+        Remount disk. 'remount' option is implicit
 
-        'remount' option is implicit
-        :param opts: Mount options separated by a comma such as:
-        'sync,rw,guest'
-        :type opts: str
+        Args:
+            opts (str): Mount options separated by a comma such as:
+                'sync,rw,guest'
         """
         if not self._mounted:
             raise errors.FailToRemount(self, '', 'not mounted!')

@@ -83,7 +83,8 @@ class SystemService(Service):
 
     def _can_handle(self):
         """
-        :raises: CanNotHandle
+        Raises:
+            CanNotHandle
         """
         executor = self.host.executor()
         rc, _, _ = executor.run_cmd(
