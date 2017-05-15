@@ -36,6 +36,9 @@ class FileSystem(Service):
     def isdir(self, path):
         return self._exec_file_test('d', path)
 
+    def isexec(self, path):
+        return self._exec_file_test('x', path)
+
     def remove(self, path):
         return self.host.executor().run_cmd(
             ['rm', '-f', path]
@@ -130,6 +133,19 @@ class FileSystem(Service):
         """
         cmd = ["mv", source_path, destination_path]
         return self.host.run_command(cmd)[0] == 0
+
+    def create_file(self, content, path):
+        """
+        Create file with given content on filesystem.
+
+        Args:
+            content (str): content of the file.
+            path (str): destination path of the file.
+        """
+        executor = self.host.executor()
+        with executor.session() as session:
+            with session.open_file(path, 'wb') as fh:
+                fh.write(six.b(content))
 
     def create_script(self, content, path):
         """

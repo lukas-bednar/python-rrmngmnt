@@ -33,6 +33,8 @@ class TestFilesystem(object):
         '[ -d /path/to/file1 ]': (1, '', ''),
         '[ -d /path/to ]': (0, '', ''),
         '[ -d somefile ]': (1, '', ''),
+        '[ -x /tmp/executable ]': (0, '', ''),
+        '[ -x /tmp/nonexecutable ]': (1, '', ''),
         'rm -f /path/to/remove': (0, '', ''),
         'rm -f /dir/to/remove': (
             1, '', 'rm: cannot remove ‘.tox/’: Is a directory',
@@ -90,6 +92,12 @@ class TestFilesystem(object):
     def test_isdir_negative(self):
         assert not self.get_host().fs.isdir('/tmp/nodir')
 
+    def test_isexec_positive(self):
+        assert self.get_host().fs.isexec('/tmp/executable')
+
+    def test_isexec_negative(self):
+        assert not self.get_host().fs.isexec('/tmp/nonexecutable')
+
     def test_remove_positive(self):
         assert self.get_host().fs.remove('/path/to/remove')
 
@@ -112,7 +120,13 @@ class TestFilesystem(object):
     def test_flush_file(self):
         assert self.get_host().fs.flush_file("/tmp/file_to_flush")
 
-    def test_create_sctript(self):
+    def test_create_file(self):
+        data = "hello world"
+        path = "/tmp/hello.txt"
+        self.get_host().fs.create_file(data, path)
+        assert self.files[path].data == data
+
+    def test_create_script(self):
         data = "echo hello"
         path = '/tmp/hello.sh'
         self.get_host().fs.create_script(data, path)
