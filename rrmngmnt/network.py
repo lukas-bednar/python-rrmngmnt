@@ -625,18 +625,24 @@ class Network(Service):
         rc, _, _ = self.host.run_command(shlex.split(cmd))
         return not bool(rc)
 
-    def if_down(self, nic):
+    def if_down(self, nic, tcp_timeout=20, io_timeout=20):
         """
         Set nic down
 
         Args:
             nic (str): Nic name
+            tcp_timeout (float): TCP timeout
+            io_timeout (float): Timeout for data operation (read/write)
 
         Returns:
             bool: True if setting nic down succeeded, false otherwise
         """
         cmd = "ip link set down %s" % nic
-        rc, _, _ = self.host.run_command(shlex.split(cmd))
+        rc, _, _ = self.host.run_command(
+            command=shlex.split(cmd),
+            tcp_timeout=tcp_timeout,
+            io_timeout=io_timeout
+        )
         return not bool(rc)
 
     def is_connective(self, ping_timeout=20.0):
