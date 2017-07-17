@@ -113,7 +113,7 @@ class LVMService(Service):
         """
         active = 'y' if activate else 'n'
         return self.host.run_command(
-            shlex.split(LV_CHANGE_CMD % active, vg_name, lv_name)
+            shlex.split(LV_CHANGE_CMD % (active, vg_name, lv_name))
         )[0] == 0
 
     def pvscan(self):
