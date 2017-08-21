@@ -71,6 +71,19 @@ You can also mount devices.
         mp.remount('rw,sync,guest') # remount with different options
         h.fs.touch('%s/new_file' % mp.target) # touch file
 
+Firewall
+~~~~~~~~
+
+Allows to manage firewall configurarion. Check which firewall service is
+running on host (firewalld/iptables) and make configure this service.
+
+.. code:: python
+
+    h.firewall.is_active('iptables')
+    h.firewall.chain('OUTPUT').list_rules()
+    h.firewall.chain('OUTPUT').add_rule('1.1.1.1', 'DROP')
+
+
 Network
 ~~~~~~~
 

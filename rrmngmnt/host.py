@@ -15,6 +15,7 @@ from rrmngmnt import power_manager
 from rrmngmnt import ssh
 from rrmngmnt.common import fqdn2ip
 from rrmngmnt.filesystem import FileSystem
+from rrmngmnt.firewall import Firewall
 from rrmngmnt.network import Network
 from rrmngmnt.operatingsystem import OperatingSystem
 from rrmngmnt.package_manager import PackageManagerProxy
@@ -499,3 +500,7 @@ class Host(Resource):
             "Use Host.executor().is_connective() instead."
         )
         return self.executor().is_connective(tcp_timeout=tcp_timeout)
+
+    @property
+    def firewall(self):
+        return Firewall(self)
