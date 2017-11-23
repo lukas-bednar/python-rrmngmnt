@@ -482,6 +482,10 @@ class Network(Service):
             ip = self.find_ip_by_default_gw(gateway, ips_and_mask)
             net_info["ip"] = ip
             if ip is not None:
+                mask = [
+                    mask.split("/")[-1] for mask in ips_and_mask if ip in mask
+                ]
+                net_info["prefix"] = mask[0] if mask else "N/A"
                 interface = self.find_int_by_ip(ip)
                 # strip @NONE for PPC
                 try:

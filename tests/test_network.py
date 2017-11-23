@@ -205,6 +205,7 @@ class TestNetwork(object):
             'ip': '10.11.12.83',
             'gateway': '10.11.12.254',
             'interface': 'enp5s0f0',
+            'prefix': '24'
         }
         assert info == expected_info
 
