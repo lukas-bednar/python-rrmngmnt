@@ -683,3 +683,22 @@ class Network(Service):
             )
             return False
         return True
+
+    def get_interface_speed(self, interface):
+        """
+        Get network interface speed
+
+        Args:
+            interface (str): Interface name
+
+        Returns:
+            str: Interface speed, or empty string if error has occurred
+        """
+        cmd = "ethtool -i {iface}".format(iface=interface)
+        rc, out, err = self.host.run_command(command=shlex.split(cmd))
+        if rc:
+            logger.error("Error fetching speed from interface: %s", err)
+            return ""
+        return self._cmd(
+            ["cat", "/sys/class/net/{iface}/speed".format(iface=interface)]
+        )

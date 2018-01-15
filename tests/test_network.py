@@ -190,6 +190,8 @@ class TestNetwork(object):
         ),
         'ip link set up interface': True,
         'ip link set down interface': True,
+        "ethtool -i eth0": (0, "driver: e1000", ""),
+        "cat /sys/class/net/eth0/speed": (0, "1000", "")
     }
     files = {
     }
@@ -260,6 +262,9 @@ class TestNetwork(object):
 
     def if_down(self):
         assert get_host().network.if_down("interface")
+
+    def test_get_interface_speed(self):
+        assert get_host().network.get_interface_speed("eth0") == "1000"
 
 
 class TestHostNameCtl(object):
