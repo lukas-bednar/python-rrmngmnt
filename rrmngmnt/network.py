@@ -5,6 +5,7 @@ import re
 import shlex
 import six
 import subprocess
+from rrmngmnt.errors import CommandExecutionFailure
 
 from rrmngmnt.service import Service
 
@@ -127,7 +128,7 @@ class HostnameCtlHandler(HostnameHandler):
         cmd = ['hostnamectl', 'set-hostname', name]
         rc, _, err = self._m.runCmd(cmd)
         if rc:
-            raise Exception("Unable to set hostname: %s" % err)
+            raise CommandExecutionFailure("Unable to set hostname: %s" % err)
 
 
 class Network(Service):
@@ -142,7 +143,7 @@ class Network(Service):
 
         if rc:
             cmd_out = " ".join(cmd)
-            raise Exception(
+            raise CommandExecutionFailure(
                 "Fail to run command %s: %s ; %s" % (cmd_out, out, err))
         return out
 
