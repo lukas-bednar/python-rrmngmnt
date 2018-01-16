@@ -64,7 +64,7 @@ class Chain(Service):
 
     def edit_chain(
         self, action, chain_name, address_type, dest, target, protocol='all',
-        ports=None
+        ports=None, rule_num=None
     ):
         """
         Changes firewall configuration
@@ -79,6 +79,8 @@ class Chain(Service):
            target (str): target rule to apply
            protocol (str): affected network protocol, Default is 'all'
            ports (list): list of ports to configure
+           rule_num (str): the number given after the chain name indicates the
+           position where the rule will be inserted
 
        Returns:
            bool: True if configuration change succeeded, False otherwise
@@ -89,15 +91,27 @@ class Chain(Service):
 
        Example:
            edit_chain(
-                action='--append',chain='OUTPUT', address_type='--destination',
-                dest={'address': nfs_server}, target='DROP'
+                action='--append',chain='OUTPUT',
+                rule_num='1',
+                address_type='--destination',
+                dest={'address': nfs_server},
+                target='DROP'
             )
         """
-        dest = ",".join(dest['address'])
         cmd = [
-            self.firewall_service, action, chain_name, address_type, dest,
-            '--jump', target.upper(), '--protocol', protocol
+            self.firewall_service, action, chain_name
         ]
+
+        if rule_num:
+            cmd.extend([rule_num])
+
+        dest = ",".join(dest['address'])
+        cmd.extend(
+            [
+                address_type, dest, '--jump', target.upper(),
+                '--protocol', protocol
+            ]
+        )
 
         if ports:
             # Iptables multiport module accepts up to 15 ports
@@ -142,6 +156,29 @@ class Chain(Service):
         return self.edit_chain(
             '--append', self.chain_name, self.address_type, dest, target,
             protocol, ports
+        )
+
+    def insert_rule(self, dest, target, protocol='all', ports=None,
+                    rule_num=None):
+        """
+        Insert new firewall rule to a specific chain
+
+        Args:
+            dest (dict): 'address' key and value containing destination host or
+               list of destination hosts
+            target (str): Target rule to apply
+            protocol (str): affected network protocol, Default is 'all'
+            ports (list): list of ports to configure
+            rule_num (str): the number given after the chain name indicates
+            the position where the rule will be inserted. If the rule_num is
+            not given , the new rule is inserted in the line 1.
+
+        Returns:
+            bool: False if inserting new rule failed, True if it succeeded
+        """
+        return self.edit_chain(
+            '--insert', self.chain_name, self.address_type, dest, target,
+            protocol, ports, rule_num
         )
 
     def delete_rule(self, dest, target, protocol='all', ports=None):

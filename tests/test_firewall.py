@@ -59,6 +59,10 @@ class TestChain(object):
         '--protocol all': (0, '', ''),
         'iptables --append INPUT --source 2.2.2.2 --jump DROP '
         '--protocol all': (0, '', ''),
+        'iptables --insert OUTPUT --destination 2.2.2.2 --jump DROP '
+        '--protocol all': (0, '', ''),
+        'iptables --insert INPUT --source 2.2.2.2 --jump DROP '
+        '--protocol all': (0, '', ''),
         'iptables --delete OUTPUT --destination 2.2.2.2 --jump DROP '
         '--protocol all': (0, '', ''),
         'iptables --delete INPUT --source 2.2.2.2 --jump DROP '
@@ -99,6 +103,16 @@ class TestChain(object):
 
     def test_add_incoming_rule(self):
         assert get_host().firewall.chain('INPUT').add_rule(
+            self.destination_host, 'DROP'
+        )
+
+    def test_insert_outgoing_rule(self):
+        assert get_host().firewall.chain('OUTPUT').insert_rule(
+            self.destination_host, 'DROP'
+        )
+
+    def test_insert_incoming_rule(self):
+        assert get_host().firewall.chain('INPUT').insert_rule(
             self.destination_host, 'DROP'
         )
 
