@@ -1,2 +1,4 @@
 pytest>=2.8.7
 pytest-cov
+git+git://github.com/lukas-bednar/pytest-docker.git
+docker-compose
