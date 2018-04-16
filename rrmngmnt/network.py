@@ -23,6 +23,10 @@ class _session(object):
         self._s = None
         self._c = 0
 
+    @property
+    def executor(self):
+        return self._e
+
     def runCmd(self, cmd):
         return self._s.run_cmd(cmd)
 
@@ -128,7 +132,8 @@ class HostnameCtlHandler(HostnameHandler):
         cmd = ['hostnamectl', 'set-hostname', name]
         rc, _, err = self._m.runCmd(cmd)
         if rc:
-            raise CommandExecutionFailure("Unable to set hostname: %s" % err)
+            raise CommandExecutionFailure(
+                self._m.executor, cmd, rc, "Unable to set hostname: %s" % err)
 
 
 class Network(Service):
@@ -142,9 +147,8 @@ class Network(Service):
         rc, out, err = self._m.runCmd(cmd)
 
         if rc:
-            cmd_out = " ".join(cmd)
             raise CommandExecutionFailure(
-                "Fail to run command %s: %s ; %s" % (cmd_out, out, err))
+                self._m.executor, cmd, rc, "OUT: %s\nERR: %s" % (out, err))
         return out
 
     @keep_session
