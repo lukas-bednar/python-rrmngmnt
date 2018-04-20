@@ -5,6 +5,8 @@ import paramiko
 import contextlib
 import subprocess
 from rrmngmnt.executor import Executor, ExecutorFactory
+import six
+
 
 AUTHORIZED_KEYS = os.path.join("%s", ".ssh/authorized_keys")
 KNOWN_HOSTS = os.path.join("%s", ".ssh/known_hosts")
@@ -198,7 +200,11 @@ class RemoteExecutor(Executor):
                     in_.write(input_)
                     in_.close()
                 self.out = out.read()
+                if isinstance(self.out, six.binary_type):
+                    self.out = self.out.decode('utf-8', errors='replace')
                 self.err = err.read()
+                if isinstance(self.err, six.binary_type):
+                    self.err = self.err.decode('utf-8', errors='replace')
             return self.rc, self.out, self.err
 
     def __init__(self, user, address, use_pkey=False, port=22):
