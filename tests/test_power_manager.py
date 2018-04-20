@@ -1,7 +1,7 @@
 import pytest
 
 from rrmngmnt import Host, User, power_manager
-from .common import FakeExecutor
+from .common import FakeExecutorFactory
 
 PM_TYPE = 'lanplus'
 PM_ADDRESS = 'test-mgmt.test'
@@ -16,19 +16,15 @@ IPMI_COMMAND = (
     pm_password=PM_PASSWORD
 )
 
-host_executor = Host.executor
+host_executor_factory = Host.executor_factory
 
 
 def teardown_module():
-    Host.executor = host_executor
+    Host.executor_factory = host_executor_factory
 
 
-def fake_cmd_data(cmd_to_data):
-    def executor(self, user=None, pkey=False):
-        e = FakeExecutor(user, self.ip)
-        e.cmd_to_data = cmd_to_data.copy()
-        return e
-    Host.executor = executor
+def fake_cmd_data(cmd_to_data, files=None):
+    Host.executor_factory = FakeExecutorFactory(cmd_to_data, files)
 
 
 class TestPowerManager(object):
@@ -50,7 +46,9 @@ class TestPowerManager(object):
 
     @staticmethod
     def get_host(ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '123456'))
+        return h
 
 
 class TestSSHPowerManager(TestPowerManager):

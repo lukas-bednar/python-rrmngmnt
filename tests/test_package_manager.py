@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from rrmngmnt import Host, User
-from .common import FakeExecutor
+from .common import FakeExecutorFactory
 import rrmngmnt.package_manager as pm
 from rrmngmnt.package_manager import PackageManagerProxy as PMProxy
 from subprocess import list2cmdline
 
-host_executor = Host.executor
+host_executor_factory = Host.executor_factory
 
 
 def extend_cmd(cmd, *args):
@@ -22,15 +22,11 @@ def join_cmds(*args):
 
 
 def teardown_module():
-    Host.executor = host_executor
+    Host.executor_factory = host_executor_factory
 
 
-def fake_cmd_data(cmd_to_data):
-    def executor(self, user=User('fakeuser', 'password'), pkey=False):
-        e = FakeExecutor(user, self.ip)
-        e.cmd_to_data = cmd_to_data.copy()
-        return e
-    Host.executor = executor
+def fake_cmd_data(cmd_to_data, files=None):
+    Host.executor_factory = FakeExecutorFactory(cmd_to_data, files)
 
 
 class BasePackageManager(object):
@@ -130,7 +126,9 @@ class BasePackageManager(object):
             })
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '11111'))
+        return h
 
     def get_pm(self):
         return self.get_host().package_manager

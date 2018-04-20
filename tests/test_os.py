@@ -3,23 +3,18 @@ import pytest
 
 from rrmngmnt import Host, User
 from rrmngmnt import errors
-from .common import FakeExecutor
+from .common import FakeExecutorFactory
 
 
-host_executor = Host.executor
+host_executor_factory = Host.executor_factory
 
 
 def teardown_module():
-    Host.executor = host_executor
+    Host.executor_factory = host_executor_factory
 
 
-def fake_cmd_data(cmd_to_data, files):
-    def executor(self, user=User("fake", "pass"), pkey=False):
-        e = FakeExecutor(user, self.ip)
-        e.cmd_to_data = cmd_to_data.copy()
-        e.files_content = files
-        return e
-    Host.executor = executor
+def fake_cmd_data(cmd_to_data, files=None):
+    Host.executor_factory = FakeExecutorFactory(cmd_to_data, files)
 
 
 class TestOperatingSystem(object):
@@ -61,7 +56,9 @@ class TestOperatingSystem(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '11111'))
+        return h
 
     def test_get_release_str(self):
         result = self.get_host().os.release_str
@@ -106,7 +103,9 @@ class TestOperatingSystemNegative(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '11114'))
+        return h
 
     def test_get_release_str(self):
         with pytest.raises(errors.CommandExecutionFailure) as ex_info:
@@ -138,7 +137,9 @@ class TestOperatingSystemUnsupported(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '22222'))
+        return h
 
     def test_get_release_info(self):
         with pytest.raises(errors.UnsupportedOperation) as ex_info:
@@ -169,7 +170,9 @@ class TestOsReleaseCorrupted(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '3333'))
+        return h
 
     def test_get_release_info(self):
         info = self.get_host().os.release_info
@@ -244,7 +247,9 @@ class TestFileStats(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '11331'))
+        return h
 
     def test_get_file_stats(self):
         file_stats = self.get_host().os.stat('/tmp/test')
@@ -304,7 +309,9 @@ class TestFileStatsNegative(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '155511'))
+        return h
 
     def test_get_file_stats(self):
         with pytest.raises(errors.CommandExecutionFailure) as ex_info:

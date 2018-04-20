@@ -39,6 +39,7 @@ class Host(Resource):
         SysVinit,
         InitCtl,
     ]
+    executor_factory = ssh.RemoteExecutorFactory()
 
     class LoggerAdapter(Resource.LoggerAdapter):
         """
@@ -219,7 +220,15 @@ class Host(Resource):
         """
         if user is None:
             user = self.executor_user
-        return ssh.RemoteExecutor(user, self.ip, use_pkey=pkey)
+        if pkey:
+            warnings.warn(
+                "Parameter 'pkey' is deprecated and will be removed in future."
+                "Please use ssh.RemoteExecutorFactory to set this parameter."
+            )
+            ef = copy.copy(ssh.RemoteExecutorFactory)
+            ef.use_pkey = pkey
+            return ef(self.ip, user)
+        return self.executor_factory.build(self, user)
 
     def run_command(
         self, command, input_=None, tcp_timeout=None, io_timeout=None,

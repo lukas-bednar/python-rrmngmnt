@@ -1,6 +1,6 @@
 import contextlib
 from subprocess import list2cmdline
-from rrmngmnt.executor import Executor
+from rrmngmnt.executor import Executor, ExecutorFactory
 import six
 
 
@@ -121,13 +121,13 @@ class FakeExecutor(Executor):
             return session.run_cmd(cmd, input_, io_timeout)
 
 
-if __name__ == "__main__":
-    from rrmngmnt import RootUser
-    u = RootUser('password')
-    e = FakeExecutor(u)
-    e.cmd_to_data = {'echo ahoj': (0, 'ahoj', '')}
-    print(e.run_cmd(['echo', 'ahoj']))
-    with e.session() as ss:
-        with ss.open_file('/tmp/a', 'w') as fh:
-            fh.write("ahoj")
-    print(e.files_content['/tmp/a'], e.files_content['/tmp/a'].data)
+class FakeExecutorFactory(ExecutorFactory):
+    def __init__(self, cmd_to_data, files_content):
+        self.cmd_to_data = cmd_to_data.copy()
+        self.files_content = files_content
+
+    def build(self, host, user):
+        fe = FakeExecutor(user, host.ip)
+        fe.cmd_to_data = self.cmd_to_data.copy()
+        fe.files_content = self.files_content
+        return fe

@@ -3,23 +3,18 @@ import pytest
 
 from rrmngmnt import Host, User
 from rrmngmnt.db import Database
-from .common import FakeExecutor
+from .common import FakeExecutorFactory
 
 
-host_executor = Host.executor
+host_executor_factory = Host.executor_factory
 
 
 def teardown_module():
-    Host.executor = host_executor
+    Host.executor_factory = host_executor_factory
 
 
-def fake_cmd_data(cmd_to_data, files):
-    def executor(self, user=None, pkey=False):
-        e = FakeExecutor(user, self.ip)
-        e.cmd_to_data = cmd_to_data.copy()
-        e.files_content = files
-        return e
-    Host.executor = executor
+def fake_cmd_data(cmd_to_data, files=None):
+    Host.executor_factory = FakeExecutorFactory(cmd_to_data, files)
 
 
 class TestDb(object):
@@ -51,10 +46,10 @@ class TestDb(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_db(self, ip='1.1.1.1'):
+        h = Host(ip)
+        h.add_user(User('root', '34546'))
         return Database(
-            Host(ip),
-            self.db_name,
-            User(self.db_user, self.db_pass),
+            h, self.db_name, User(self.db_user, self.db_pass),
         )
 
     def test_restart(self):

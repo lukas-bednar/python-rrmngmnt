@@ -1,0 +1,7 @@
+---
+version: '3'
+services:
+  ubuntu:
+    ports:
+      - "22221:22"
+    image: "chrismeyers/ubuntu12.04"

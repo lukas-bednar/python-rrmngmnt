@@ -3,23 +3,18 @@ import pytest
 
 from rrmngmnt import Host, User
 from rrmngmnt import errors
-from .common import FakeExecutor
+from .common import FakeExecutorFactory
 
 
-host_executor = Host.executor
+host_executor_factory = Host.executor_factory
 
 
 def teardown_module():
-    Host.executor = host_executor
+    Host.executor_factory = host_executor_factory
 
 
-def fake_cmd_data(cmd_to_data, files):
-    def executor(self, user=User('fakeuser', 'password'), pkey=False):
-        e = FakeExecutor(user, self.ip)
-        e.cmd_to_data = cmd_to_data.copy()
-        e.files_content = files
-        return e
-    Host.executor = executor
+def fake_cmd_data(cmd_to_data, files=None):
+    Host.executor_factory = FakeExecutorFactory(cmd_to_data, files)
 
 
 class TestFilesystem(object):
@@ -72,7 +67,9 @@ class TestFilesystem(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '11111'))
+        return h
 
     def test_exists_positive(self):
         assert self.get_host().fs.exists('/tmp/exits')
@@ -194,7 +191,9 @@ class TestFSGetPutFile(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '11111'))
+        return h
 
     def test_get(self, tmpdir):
         self.get_host().fs.get("/path/to/get_file", str(tmpdir))
@@ -221,7 +220,9 @@ class TestTransfer(object):
         fake_cmd_data(cls.data, cls.files)
 
     def get_host(self, ip='1.1.1.1'):
-        return Host(ip)
+        h = Host(ip)
+        h.add_user(User('root', '11111'))
+        return h
 
     def test_transfer(self):
         self.get_host().fs.transfer(

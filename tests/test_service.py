@@ -1,27 +1,25 @@
 # -*- coding: utf-8 -*-
-from rrmngmnt import Host
+from rrmngmnt import Host, User
 from rrmngmnt.service import SysVinit, Systemd, InitCtl
-from .common import FakeExecutor
+from .common import FakeExecutorFactory
 import pytest
 
 
-host_executor = Host.executor
+host_executor_factory = Host.executor_factory
 
 
 def teardown_module():
-    Host.executor = host_executor
+    Host.executor_factory = host_executor_factory
 
 
-def fake_cmd_data(cmd_to_data):
-    def executor(self, user=None, pkey=False):
-        e = FakeExecutor(user, self.ip)
-        e.cmd_to_data = cmd_to_data.copy()
-        return e
-    Host.executor = executor
+def fake_cmd_data(cmd_to_data, files=None):
+    Host.executor_factory = FakeExecutorFactory(cmd_to_data, files)
 
 
 def get_host(ip='1.1.1.1'):
-    return Host(ip)
+    h = Host(ip)
+    h.add_user(User('root', 'fakepasswd'))
+    return h
 
 
 class TestSystemService(object):

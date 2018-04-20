@@ -98,3 +98,8 @@ class Executor(Resource):
         """
         with self.session() as session:
             return session.run_cmd(cmd, input_)
+
+
+class ExecutorFactory(object):
+    def build(self, host, user):
+        raise NotImplementedError()
