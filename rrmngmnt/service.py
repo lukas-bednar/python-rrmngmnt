@@ -200,13 +200,12 @@ class Systemd(SystemService):
         executor = self.host.executor()
         rc, _, _ = executor.run_cmd(cmd, io_timeout=self.timeout)
 
-        rc_result = rc == 0
-        if not rc_result:
-            cmd = ['journalctl', '-u', self.name]
+        if rc:
+            cmd = ['journalctl', '-u', self.name + ".service"]
             _, out, _ = executor.run_cmd(cmd, io_timeout=self.timeout)
-            self.logger.info(out)
+            self.logger.warning(out)
 
-        return rc_result
+        return rc == 0
 
     def is_enabled(self):
         return self._execute('is-enabled')
