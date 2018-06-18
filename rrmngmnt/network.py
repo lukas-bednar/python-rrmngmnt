@@ -699,11 +699,22 @@ class Network(Service):
         Returns:
             str: Interface speed, or empty string if error has occurred
         """
-        cmd = "ethtool -i {iface}".format(iface=interface)
-        rc, out, err = self.host.run_command(command=shlex.split(cmd))
-        if rc:
-            logger.error("Error fetching speed from interface: %s", err)
-            return ""
-        return self._cmd(
-            ["cat", "/sys/class/net/{iface}/speed".format(iface=interface)]
-        )
+        ethtool_cmd = "ethtool -i {iface}".format(iface=interface)
+        self._cmd(shlex.split(ethtool_cmd))
+        speed_cmd = "cat /sys/class/net/{iface}/speed".format(iface=interface)
+        out = self._cmd(shlex.split(speed_cmd))
+        return out.strip()
+
+    def get_interface_status(self, interface):
+        """
+        Get interface status
+
+        Args:
+            interface (str): Interface name
+
+        Returns:
+            str: Interface status (up/down)
+        """
+        cmd = "cat /sys/class/net/{iface}/operstate".format(iface=interface)
+        out = self._cmd(shlex.split(cmd))
+        return out.strip()
