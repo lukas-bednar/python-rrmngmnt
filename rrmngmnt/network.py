@@ -485,7 +485,7 @@ class Network(Service):
             return False
         return True
 
-    def send_icmp(self, dst, count="5", size="1500", extra_args=None):
+    def send_icmp(self, dst, count="5", size=None, extra_args=None):
         """
         Send ICMP to destination IP/FQDN
 
@@ -500,9 +500,9 @@ class Network(Service):
         :return: True/False
         :rtype: bool
         """
-        cmd = ["ping", dst, "-c", count, "-s", size]
-        if size != "1500":
-            cmd.extend(["-M", "do"])
+        cmd = ["ping", dst, "-c", count]
+        if size and size.isdigit():
+            cmd.extend(["-s", "size", "-M", "do"])
         if extra_args is not None:
             for ar in extra_args.split():
                 cmd.extend(ar.split())
