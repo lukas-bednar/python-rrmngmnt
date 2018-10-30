@@ -166,7 +166,7 @@ class TestNetwork(object):
         ),
         'brctl addbr br1': (0, '', ''),
         'brctl addif br1 net1': (0, '', ''),
-        'ls -la /sys/class/net | grep \'dummy_\|pci\' | grep -o \'[^/]*$\'': (
+        'ls -la /sys/class/net | grep \'dummy_\\|pci\' | grep -o \'[^/]*$\'': (
             0,
             '\n'.join(
                 [
