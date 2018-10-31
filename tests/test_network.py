@@ -187,7 +187,8 @@ class TestNetwork(object):
         'ip link set down interface': True,
         "ethtool -i eth0": (0, "driver: e1000", ""),
         "cat /sys/class/net/eth0/speed": (0, "1000", ""),
-        "cat /sys/class/net/eth0/operstate": (0, "up", "")
+        "cat /sys/class/net/eth0/operstate": (0, "up", ""),
+        "ping 1.2.3.4 -c 5 -s 10 -M do": (0, "something", ""),
     }
     files = {
     }
@@ -264,6 +265,9 @@ class TestNetwork(object):
 
     def test_get_interface_status(self):
         assert get_host().network.get_interface_status("eth0") == "up"
+
+    def test_send_icmp(self):
+        assert get_host().network.send_icmp('1.2.3.4', size="10")
 
 
 class TestHostNameCtl(object):
