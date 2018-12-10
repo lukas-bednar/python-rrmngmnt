@@ -161,17 +161,27 @@ class FileSystem(Service):
                 fh.write(six.b(content))
             self.chmod(path=path, mode="+x")
 
-    def mkdir(self, path):
+    def mkdir(self, path, parents=False, mode=None):
         """
         Create directory on host
 
         Args:
             path (str): directory path
+            parents (bool): True - no error if existing, make parent
+                directories as needed, False - error when parent
+                doesn't exist (default False)
+            mode (str): permission mode(600 for example or u+x)
 
         Raises:
             CommandExecutionFailure: If mkdir failed
         """
-        self._exec_command(['mkdir', path])
+        cmd = ['mkdir']
+        if parents:
+            cmd.append('-p')
+        if mode:
+            cmd.extend(['-m', mode])
+        cmd.append(path)
+        self._exec_command(cmd)
 
     def chown(self, path, username, groupname):
         """

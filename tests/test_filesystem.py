@@ -38,6 +38,7 @@ class TestFilesystem(object):
         'cat %s' % "/tmp/file": (0, 'data', ''),
         'chmod +x /tmp/hello.sh': (0, '', ''),
         'mkdir /dir/to/remove': (0, '', ''),
+        'mkdir -p -m 600 /dir/to/remove2/remove': (0, '', ''),
         'chown root:root /dir/to/remove': (0, '', ''),
         'chmod 600 /dir/to/remove': (0, '', ''),
         'chmod 600 /tmp/nofile': (
@@ -131,6 +132,11 @@ class TestFilesystem(object):
 
     def test_mkdir_positive(self):
         self.get_host().fs.mkdir('/dir/to/remove')
+
+    def test_mkdir_pm_positive(self):
+        self.get_host().fs.mkdir(
+            '/dir/to/remove2/remove', parents=True, mode='600'
+        )
 
     def test_chown_positive(self):
         self.get_host().fs.chown('/dir/to/remove', 'root', 'root')
