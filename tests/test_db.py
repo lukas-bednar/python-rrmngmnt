@@ -36,7 +36,18 @@ class TestDb(object):
         ),
         'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
         '-c \\\dt': (
-            0, "", ""
+            0,
+            (
+                "List of relations\n"
+                " Schema |         Name         | Type  | Owner\n"
+                "--------+----------------------+-------+---------\n"
+                " public | test_table           | table | postgres\n"
+            ),
+            ""
+        ),
+        'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
+        '-c \\\dv': (
+            0, "", "Did not find any relations."
         ),
     }
     files = {}
@@ -74,4 +85,6 @@ class TestDb(object):
     def test_psql_cmd(self):
         db = self.get_db()
         res = db.psql_cmd('\\\dt')
-        assert res
+        assert 'List of relations' in res
+        res = db.psql_cmd('\\\dv')
+        assert res == 'Did not find any relations.'
