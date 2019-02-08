@@ -16,7 +16,7 @@ class Database(Service):
 
     def psql(self, sql, *args):
         """
-        Execute psql command on host
+        Execute sql command on host
 
         Args:
             sql (str): sql command
@@ -47,6 +47,31 @@ class Database(Service):
         # NOTE: I am considering to use Psycopg2 to access DB directly.
         # I need to think whether it is better or not.
         # We need to realize that connection can be forbidden from outside ...
+
+    def psql_cmd(self, command):
+        """
+        Execute psql special command on host (e.g. \dt, \dv, ...)
+
+        Args:
+            command (str): special psql command
+        Returns:
+            str: output of the command
+        """
+        cmd = [
+            'export', 'PGPASSWORD=%s;' % self.user.password,
+            'psql', '-d', self.name, '-U', self.user.name, '-h', 'localhost',
+            '-c', command
+        ]
+        executor = self.host.executor()
+        with executor.session() as ss:
+            rc, out, err = ss.run_cmd(cmd)
+        if rc:
+            raise Exception(
+                "Failed to exec command: %s" % err
+            )
+        if not out and err:
+            out = err
+        return out
 
     def restart(self):
         """

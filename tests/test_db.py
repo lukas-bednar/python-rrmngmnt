@@ -66,3 +66,8 @@ class TestDb(object):
         with pytest.raises(Exception) as ex_info:
             db.psql("SELECT * FROM table ERROR")
         assert "Syntax Error" in str(ex_info.value)
+
+    def test_psql_cmd(self):
+        db = self.get_db()
+        res = db.psql_cmd('\dt')
+        assert res
