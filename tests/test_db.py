@@ -34,6 +34,10 @@ class TestDb(object):
         '-R __RECORD_SEPARATOR__ -t -A -c "SELECT * FROM table ERROR"': (
             1, "", "Syntax Error"
         ),
+        'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
+        '-c "\\\dt"': (
+            0, "", ""
+        ),
     }
     files = {}
 
@@ -69,5 +73,5 @@ class TestDb(object):
 
     def test_psql_cmd(self):
         db = self.get_db()
-        res = db.psql_cmd('\dt')
+        res = db.psql_cmd('\\\dt')
         assert res
