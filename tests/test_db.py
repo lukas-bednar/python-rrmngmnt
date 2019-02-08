@@ -35,7 +35,7 @@ class TestDb(object):
             1, "", "Syntax Error"
         ),
         'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
-        '-c "\\\dt"': (
+        '-c \\\dt': (
             0, "", ""
         ),
     }
