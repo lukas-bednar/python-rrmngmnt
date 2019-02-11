@@ -50,7 +50,7 @@ class Database(Service):
 
     def psql_cmd(self, command):
         """
-        Execute psql special command on host (e.g. \dt, \dv, ...)
+        Execute psql special command on host (e.g. \\dt, \\dv, ...)
 
         Args:
             command (str): special psql command
