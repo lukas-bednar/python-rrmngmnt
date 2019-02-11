@@ -49,6 +49,10 @@ class TestDb(object):
         '-c \\\\dv': (
             0, "", "Did not find any relations."
         ),
+        'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
+        '-c \\\\gg': (
+            1, "", "invalid command \\gg"
+        ),
     }
     files = {}
 
@@ -88,3 +92,9 @@ class TestDb(object):
         assert 'List of relations' in res
         res = db.psql_cmd('\\\\dv')
         assert res == 'Did not find any relations.'
+
+    def test_negative_cmd(self):
+        db = self.get_db()
+        with pytest.raises(Exception) as ex_info:
+            db.psql_cmd('\\\\gg')
+        assert 'invalid command' in str(ex_info.value)
