@@ -34,6 +34,25 @@ class TestDb(object):
         '-R __RECORD_SEPARATOR__ -t -A -c "SELECT * FROM table ERROR"': (
             1, "", "Syntax Error"
         ),
+        'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
+        '-c \\\\dt': (
+            0,
+            (
+                "List of relations\n"
+                " Schema |         Name         | Type  | Owner\n"
+                "--------+----------------------+-------+---------\n"
+                " public | test_table           | table | postgres\n"
+            ),
+            ""
+        ),
+        'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
+        '-c \\\\dv': (
+            0, "", "Did not find any relations."
+        ),
+        'export PGPASSWORD=db_pass; psql -d db_name -U db_user -h localhost '
+        '-c \\\\gg': (
+            1, "", "invalid command \\gg"
+        ),
     }
     files = {}
 
@@ -66,3 +85,16 @@ class TestDb(object):
         with pytest.raises(Exception) as ex_info:
             db.psql("SELECT * FROM table ERROR")
         assert "Syntax Error" in str(ex_info.value)
+
+    def test_psql_cmd(self):
+        db = self.get_db()
+        res = db.psql_cmd('\\\\dt')
+        assert 'List of relations' in res
+        res = db.psql_cmd('\\\\dv')
+        assert res == 'Did not find any relations.'
+
+    def test_negative_cmd(self):
+        db = self.get_db()
+        with pytest.raises(Exception) as ex_info:
+            db.psql_cmd('\\\\gg')
+        assert 'invalid command' in str(ex_info.value)
