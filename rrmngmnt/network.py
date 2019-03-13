@@ -630,7 +630,7 @@ class Network(Service):
         Returns:
             bool: True if setting nic up succeeded, false otherwise
         """
-        cmd = "ip link set up %s" % nic
+        cmd = "ip link set {nic} up".format(nic=nic)
         rc, _, _ = self.host.run_command(shlex.split(cmd))
         return not bool(rc)
 
@@ -646,13 +646,30 @@ class Network(Service):
         Returns:
             bool: True if setting nic down succeeded, false otherwise
         """
-        cmd = "ip link set down %s" % nic
+        cmd = "ip link set {nic} down".format(nic=nic)
         rc, _, _ = self.host.run_command(
             command=shlex.split(cmd),
             tcp_timeout=tcp_timeout,
             io_timeout=io_timeout
         )
         return not bool(rc)
+
+    def add_ip(self, nic, ip, mask):
+        """
+        Add IP address to interface
+
+        Args:
+            nic (str): Interface name
+            ip (str): IP address to add
+            mask (str): IP netmask
+
+        Returns:
+            bool: True if add IP was success, False otherwise
+        """
+        cmd = "ip address add {ip}/{mask} dev {nic}".format(
+            ip=ip, mask=mask, nic=nic
+        )
+        return not bool(self.host.run_command(command=shlex.split(cmd))[0])
 
     def is_connective(self, ping_timeout=20.0):
         """

@@ -183,12 +183,14 @@ class TestNetwork(object):
             "Permanent address: 44:1e:a1:73:3c:98",
             ''
         ),
-        'ip link set up interface': True,
-        'ip link set down interface': True,
+        'ip link set interface up': True,
+        'ip link set interface down': True,
         "ethtool -i eth0": (0, "driver: e1000", ""),
         "cat /sys/class/net/eth0/speed": (0, "1000", ""),
         "cat /sys/class/net/eth0/operstate": (0, "up", ""),
         "ping 1.2.3.4 -c 5 -s 10 -M do": (0, "something", ""),
+        'ip address add 1.2.3.4/24 dev eth0': (0, "", ""),
+        'ip address add 1.2.3.4/255.255.255.0 dev eth0': (0, "", ""),
     }
     files = {
     }
@@ -268,6 +270,14 @@ class TestNetwork(object):
 
     def test_send_icmp(self):
         assert get_host().network.send_icmp('1.2.3.4', size="10")
+
+    def test_add_ip_with_bitmask(self):
+        assert get_host().network.add_ip(nic="eth0", ip="1.2.3.4", mask="24")
+
+    def test_add_ip_with_subnet_mask(self):
+        assert get_host().network.add_ip(
+            nic="eth0", ip="1.2.3.4", mask="255.255.255.0"
+        )
 
 
 class TestHostNameCtl(object):
