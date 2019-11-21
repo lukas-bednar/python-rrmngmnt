@@ -106,8 +106,8 @@ class FakeExecutor(Executor):
         @contextlib.contextmanager
         def execute(self, bufsize=-1, timeout=None):
             rc, out, err = self._ss.get_data(self.cmd)
-            yield six.StringIO(), six.StringIO(out), six.StringIO(err)
             self._rc = rc
+            yield six.StringIO(), six.StringIO(out), six.StringIO(err)
 
     def __init__(self, user, address):
         super(FakeExecutor, self).__init__(user)

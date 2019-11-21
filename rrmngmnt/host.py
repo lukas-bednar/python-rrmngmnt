@@ -19,6 +19,7 @@ from rrmngmnt.firewall import Firewall
 from rrmngmnt.network import Network
 from rrmngmnt.operatingsystem import OperatingSystem
 from rrmngmnt.package_manager import PackageManagerProxy
+from rrmngmnt.playbook_runner import PlaybookRunner
 from rrmngmnt.resource import Resource
 from rrmngmnt.service import Systemd, SysVinit, InitCtl
 from rrmngmnt.storage import NFSService, LVMService
@@ -459,6 +460,10 @@ class Host(Resource):
     @property
     def fs(self):
         return FileSystem(self)
+
+    @property
+    def playbook(self):
+        return PlaybookRunner(self)
 
     @property
     def ssh_public_key(self):

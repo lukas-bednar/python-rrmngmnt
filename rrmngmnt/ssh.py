@@ -21,12 +21,12 @@ class RemoteExecutor(Executor):
     Any resource which provides SSH service.
 
     This class is meant to replace our current utilities.machine.LinuxMachine
-    classs. This allows you to lower access to communicate with ssh.
+    class. This allows you to lower access to communicate with ssh.
     Like a live interaction, getting rid of True/False results, and
     mixing stdout with stderr.
 
     You can still use use 'run_cmd' method if you don't care.
-    But I would recommed you to work like this:
+    But I would recommend you to work like this:
     """
 
     TCP_TIMEOUT = 10.0
