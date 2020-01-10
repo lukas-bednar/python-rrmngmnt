@@ -34,8 +34,6 @@ def normalize_string(data):
     """
     if isinstance(data, six.binary_type):
         data = data.decode('utf-8', errors='replace')
-    if isinstance(data, six.text_type):
-        data = data.encode('utf-8', errors='replace')
     return data
 
 

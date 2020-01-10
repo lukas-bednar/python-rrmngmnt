@@ -147,7 +147,7 @@ class Host(Resource):
                     (pm_type, self)
                 )
             else:
-                return self._power_managers.values()[0]
+                return list(self._power_managers.values())[0]
         raise Exception("No PM is associated with the host %s" % self)
 
     def get_user(self, name):

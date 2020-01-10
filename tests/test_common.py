@@ -5,6 +5,7 @@ import pytest
 import netaddr
 from rrmngmnt import common, Host, User
 from .common import FakeExecutorFactory
+import six
 
 
 def test_fqdn2ip_positive():
@@ -89,3 +90,45 @@ class TestCommandReader(object):
 
         assert cmd_reader.rc
         assert cmd_reader.err
+
+
+def test_normalize_string_bytes_input():
+    """
+    Test 'normalize_string' function with 'bytes' input
+
+    In python3 we want to convert bytes() to str(),
+        to eliminate TypeError exception when mixing between bytes & str
+        at the calling function
+    In python2 there is no meaning if the output will by bytes() or str()
+        python will not raise a TypeError exception when mixing between them
+    """
+    if six.PY3:
+        assert type(common.normalize_string(data=bytes())) == str
+
+
+def test_normalize_string_str_input():
+    """
+    Test 'normalize_string' function with 'str' input
+
+    Keep the str type in python3
+    Convert the str type to unicode in python2
+    """
+    try:
+        expected_type = unicode  # Python2
+    except NameError:
+        expected_type = str  # Python3
+
+    assert type(common.normalize_string(data=str())) == expected_type
+
+
+def test_normalize_string_unicode_input():
+    """
+    Test 'normalize_string' function with 'unicode' input (PY2 only)
+
+    In python2 unicode input should not be converted
+    'unicode' is not supported at python3
+    """
+    if six.PY2:
+        assert type(
+            common.normalize_string(data=unicode())  # noqa: F821
+        ) == unicode  # noqa: F821
