@@ -14,6 +14,7 @@ ID_RSA_PUB = os.path.join("%s", ".ssh/id_rsa.pub")
 ID_RSA_PRV = os.path.join("%s", ".ssh/id_rsa")
 CONNECTIVITY_TIMEOUT = 600
 CONNECTIVITY_SAMPLE_TIME = 20
+TCP_CONNECTION_TIMEOUT = 20
 
 
 class RemoteExecutor(Executor):
@@ -266,7 +267,8 @@ class RemoteExecutor(Executor):
     def wait_for_connectivity_state(
         self, positive,
         timeout=CONNECTIVITY_TIMEOUT,
-        sample_time=CONNECTIVITY_SAMPLE_TIME
+        sample_time=CONNECTIVITY_SAMPLE_TIME,
+        tcp_connection_timeout=TCP_CONNECTION_TIMEOUT
     ):
         """
         Wait until address will be connective or not via ssh
@@ -275,6 +277,7 @@ class RemoteExecutor(Executor):
             positive (bool): Wait for the positive or negative connective state
             timeout (int): Wait timeout
             sample_time (int): Sample the ssh each sample_time seconds
+            tcp_connection_timeout (int): TCP connection timeout
 
         Returns:
             bool: True, if positive and ssh is connective or negative and ssh
@@ -282,7 +285,9 @@ class RemoteExecutor(Executor):
         """
         reachable = "unreachable" if positive else "reachable"
         timeout_counter = 0
-        while self.is_connective() != positive:
+        while self.is_connective(
+            tcp_timeout=tcp_connection_timeout
+        ) != positive:
             if timeout_counter > timeout:
                 self.logger.error(
                     "Address %s is still %s via ssh, after %s seconds",
