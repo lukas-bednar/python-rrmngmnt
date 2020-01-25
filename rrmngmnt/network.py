@@ -6,6 +6,7 @@ import shlex
 import six
 import subprocess
 from rrmngmnt.errors import CommandExecutionFailure
+from rrmngmnt.nmcli import NMCLI
 
 from rrmngmnt.service import Service
 
@@ -141,6 +142,13 @@ class Network(Service):
         super(Network, self).__init__(host)
         self._m = _session(host)
         self._hnh = None
+        self._nmcli = None
+
+    @property
+    def nmcli(self):
+        if self._nmcli is None:
+            self._nmcli = NMCLI(self.host)
+        return self._nmcli
 
     @keep_session
     def _cmd(self, cmd):
