@@ -889,35 +889,35 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
     data = {
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 id 163 dev enp8s0f0"
+            "type vlan con-name vlan_con id 163 dev enp8s0f0"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 dev enp8s0f0 id 163"
+            "type vlan con-name vlan_con dev enp8s0f0 id 163"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "autoconnect yes id 163 dev enp8s0f0"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "autoconnect yes dev enp8s0f0 id 163"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "save yes id 163 dev enp8s0f0"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "save yes dev enp8s0f0 id 163"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "id 163 dev enp8s0f0 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 ipv4.gateway 192.168.23.254 "
@@ -926,7 +926,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "dev enp8s0f0 id 163 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 ipv4.gateway 192.168.23.254 "
@@ -935,7 +935,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "id 163 dev enp8s0f0 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2.2 ipv4.gateway 192.168.23.254 "
@@ -944,7 +944,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "dev enp8s0f0 id 163 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2.2 ipv4.gateway 192.168.23.254 "
@@ -953,7 +953,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "id 163 dev enp8s0f0 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 "
@@ -963,7 +963,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "dev enp8s0f0 id 163 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 "
@@ -973,7 +973,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "id 163 dev enp8s0f0 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 "
@@ -983,7 +983,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "dev enp8s0f0 id 163 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 "
@@ -993,7 +993,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "id 163 dev enp8s0f0 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 "
@@ -1003,7 +1003,7 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "dev enp8s0f0 id 163 "
             "ipv4.method manual ipv6.method manual "
             "ipv4.addresses 192.168.23.2 "
@@ -1013,32 +1013,32 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
         ): (10, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "id 163 dev enp8s0f0 mtu 1600"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "mtu 1600 id 163 dev enp8s0f0"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "dev enp8s0f0 id 163 mtu 1600"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "dev enp8s0f0 mtu 1600 id 163"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "mtu 1600 dev enp8s0f0 id 163"
         ): (0, "", ""),
         (
             "nmcli connection add "
-            "type vlan con-name vlan_con ifname enp8s0f0 "
+            "type vlan con-name vlan_con "
             "id 163 mtu 1600 dev enp8s0f0"
         ): (0, "", ""),
         "nmcli device show enp8s0f0": (0, "ethernet", ""),
@@ -1047,9 +1047,9 @@ class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):
             "",
             "Error: Device 'enp8s0f00' not found.",
         ),
-        "nmcli connection add type vlan con-name vlan_con ifname enp8s0f00 "
+        "nmcli connection add type vlan con-name vlan_con "
         "id 163 dev enp8s0f00": (10, "", ""),
-        "nmcli connection add type vlan con-name vlan_con ifname enp8s0f00 "
+        "nmcli connection add type vlan con-name vlan_con "
         "dev enp8s0f00 id 163": (10, "", ""),
     }
 

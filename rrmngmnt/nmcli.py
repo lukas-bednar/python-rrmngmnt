@@ -451,7 +451,6 @@ class NMCLI(Service):
                 operation=Operations.ADD,
                 con_type=Types.VLAN,
                 name=con_name,
-                ifname=dev,
                 auto_connect=auto_connect,
                 save=save,
                 ipv4_method=ipv4_method,
@@ -634,7 +633,7 @@ class NMCLI(Service):
 
     @staticmethod
     def _common_options_builder(
-        con_type, con_name, ifname, auto_connect=None, save=None
+        con_type, con_name, ifname=None, auto_connect=None, save=None
     ):
         """
         Generates a string containing common options for the nmcli command.
@@ -658,8 +657,11 @@ class NMCLI(Service):
             return "yes" if value is True else "no"
 
         common_options = (
-            "type {type} con-name {con_name} ifname {ifname}"
-        ).format(type=con_type, con_name=con_name, ifname=ifname)
+            "type {type} con-name {con_name}"
+        ).format(type=con_type, con_name=con_name)
+
+        if ifname:
+            common_options += " ifname {ifname}".format(ifname=ifname)
         if auto_connect is not None:
             common_options += " autoconnect {value}".format(
                 value=_get_str_value(value=auto_connect)
