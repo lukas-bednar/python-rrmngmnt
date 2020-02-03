@@ -1,3 +1,4 @@
+import json
 import logging
 import netaddr
 import os
@@ -478,6 +479,30 @@ class Network(Service):
         self._cmd(cmd_br_down)
         self._cmd(cmd_del_br)
         return True
+
+    @keep_session
+    def get_bridges(self):
+        """
+        Gets a host's bridges details using the 'bridge' command.
+
+        Returns:
+            list[dict]: a list of dicts where each dict represents a bridge,
+                and has the keys:
+                    * "ifname" -> str
+                        The interface enslaved to the bridge.
+                    * "flags" -> list[str]
+                        A list of flags associated with the bridge.
+                    * "mtu" -> int
+                        The MTU configured on the bridge.
+                    * "master" -> str
+                        The bridge name.
+                    * "state" -> str
+                    * "priority" -> int
+                    * "cost" -> int
+                    * "ifindex" -> int
+        """
+        raw_bridges = self._cmd(shlex.split("bridge -j link show"))
+        return json.loads(s=raw_bridges)
 
     @keep_session
     def get_info(self):

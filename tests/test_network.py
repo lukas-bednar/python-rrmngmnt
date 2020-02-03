@@ -24,6 +24,18 @@ class TestNetwork(object):
     __test__ = True
 
     data = {
+        "bridge -j link show": (
+            0,
+            '[{"ifindex":2,"ifname":"enp1s0f0","flags":'
+            '["BROADCAST","MULTICAST","UP","LOWER_UP"],'
+            '"mtu":1500,"master":"ovirtmgmt","state":"forwarding",'
+            '"priority":32,"cost":100},'
+            '{"ifindex":9,"ifname":"virbr0-nic","flags":'
+            '["BROADCAST","MULTICAST"],'
+            '"mtu":1500,"master":"virbr0","state":"disabled",'
+            '"priority":32,"cost":100}]',
+            ""
+        ),
         'ip route': (
             0,
             '\n'.join(
@@ -277,6 +289,33 @@ class TestNetwork(object):
     def test_add_ip_with_subnet_mask(self):
         assert get_host().network.add_ip(
             nic="eth0", ip="1.2.3.4", mask="255.255.255.0"
+        )
+
+    def test_get_bridges(self):
+        assert (
+            get_host().network.get_bridges() ==
+            [
+                {
+                    "ifindex": 2,
+                    "ifname": "enp1s0f0",
+                    "flags": ["BROADCAST", "MULTICAST", "UP", "LOWER_UP"],
+                    "mtu": 1500,
+                    "master": "ovirtmgmt",
+                    "state": "forwarding",
+                    "priority": 32,
+                    "cost": 100
+                },
+                {
+                    "ifindex": 9,
+                    "ifname": "virbr0-nic",
+                    "flags": ["BROADCAST", "MULTICAST"],
+                    "mtu": 1500,
+                    "master": "virbr0",
+                    "state": "disabled",
+                    "priority": 32,
+                    "cost": 100
+                }
+            ]
         )
 
 
