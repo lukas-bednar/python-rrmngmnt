@@ -116,6 +116,14 @@ class PlaybookRunnerBase(object):
         return str(fp)
 
     @pytest.fixture()
+    def fake_remote_playbook(self, fake_host):
+        fp = os.path.join(self.tmp_dir, self.playbook_name)
+        fake_host.fs.create_file(
+            content=self.playbook_content, path=str(fp)
+        )
+        return str(fp)
+
+    @pytest.fixture()
     def playbook_runner(self, fake_host):
         playbook_runner = PlaybookRunner(fake_host)
         playbook_runner.short_run_uuid = self.fake_run_uuid
@@ -157,6 +165,21 @@ class TestBasic(PlaybookRunnerBase):
     def test_basic_scenario(self, playbook_runner, fake_playbook):
         """ User has provided only playbook """
         rc, _, _ = playbook_runner.run(playbook=fake_playbook)
+        assert not rc
+        assert self.check_files_on_host(
+            os.path.join(self.tmp_dir, PlaybookRunner.default_inventory_name)
+        )
+
+
+class TestRemoteBasic(PlaybookRunnerBase):
+
+    files = {}
+
+    def test_remote_scenario(self, playbook_runner, fake_remote_playbook):
+        """ User has provided only remote playbook """
+        rc, _, _ = playbook_runner.run(
+            playbook=fake_remote_playbook, upload_playbook=False
+        )
         assert not rc
         assert self.check_files_on_host(
             os.path.join(self.tmp_dir, PlaybookRunner.default_inventory_name)

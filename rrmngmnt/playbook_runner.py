@@ -13,6 +13,7 @@ class PlaybookRunner(Service):
     Class for working with and especially executing Ansible playbooks on hosts.
     On your Host instance, it might be accessed (similar to other services) by
     playbook property.
+    Each instance of this class represent a unique ansible run with an uuid.
 
     Example:
         rc,out, err = my_host.playbook.run('long_task.yml')
@@ -106,13 +107,14 @@ class PlaybookRunner(Service):
     def run(
         self, playbook, extra_vars=None, vars_files=None, inventory=None,
         verbose_level=1, run_in_check_mode=False, ssh_common_args=None,
+        upload_playbook=True
     ):
         """
         Run Ansible playbook on host
 
         Args:
-            playbook (str): Path to playbook you want to execute (on your
-                machine)
+            playbook (str): Path to playbook you want to execute (the location
+                is determine by remote_playbook argument - default is local)
             extra_vars (dict): Dictionary of extra variables that are to be
                 passed to playbook execution. They will be dumped to JSON file
                 and included using -e@ parameter
@@ -132,6 +134,8 @@ class PlaybookRunner(Service):
                 replace) the list of default options that Ansible uses when
                 calling ssh/sftp/scp. Example: ["-o StrictHostKeyChecking=no",
                 "-o UserKnownHostsFile=/dev/null"]
+            upload_playbook (bool): If the playbook is going to be uploaded
+                from the local machine (True - Default) or not (False)
 
         Returns:
             tuple: tuple of (rc, out, err)
@@ -172,7 +176,9 @@ class PlaybookRunner(Service):
                     )
                 )
 
-            self.cmd.append(self._upload_file(playbook))
+            if upload_playbook:
+                playbook = self._upload_file(playbook)
+            self.cmd.append(playbook)
 
             self.logger.debug("Executing: {}".format(" ".join(self.cmd)))
 
