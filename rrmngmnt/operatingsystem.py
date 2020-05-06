@@ -13,6 +13,8 @@ class OperatingSystem(Service):
         self._release_str = None
         self._release_info = None
         self._dist = None
+        self._kernel = None
+        self._timezone = None
 
     def _exec_command(self, cmd, err_msg=None):
         host_executor = self.host.executor()
@@ -113,6 +115,58 @@ class OperatingSystem(Service):
         if not self._dist:
             self._dist = self.get_distribution()
         return self._dist
+
+    def get_kernel_info(self):
+        """
+        Get kernel info (release, version and type)
+
+        Returns:
+            namedtuple Kernel: Results tuple(release, version and type)
+
+        Examples:
+             kernel(
+                    release='4.18.0-135.el8.x86_64',
+                    version='#1 SMP Fri Aug 16 19:31:40 UTC 2019',
+                    type'='x86_64'
+                    )
+        """
+        values = ["release", "version", "type"]
+        cmd = ["uname", "-r", ";", "uname", "-v", ";", "uname", "-m"]
+        out = self._exec_command(
+            cmd=cmd, err_msg="Failed to obta kernel info"
+        )
+        Kernel = namedtuple('Kernel', values)
+        return Kernel(*[i.strip() for i in out.strip().split("\n")])
+
+    @property
+    def kernel_info(self):
+        if not self._kernel:
+            self._kernel = self.get_kernel_info()
+        return self._kernel
+
+    def get_timezone(self):
+        """
+        Get timezone (name and offset)
+
+        Returns:
+            namedtuple Timezone: Results tuple(name and offset)
+
+        Examples:
+             kernel(name='IDT', offset='+0300')
+        """
+        values = ["name", "offset"]
+        cmd = ["date", "+%Z\\", "%z"]
+        out = self._exec_command(
+            cmd=cmd, err_msg="Failed to obtain timezone info"
+        )
+        Timezone = namedtuple('Timezone', values)
+        return Timezone(*[i.strip() for i in out.split()])
+
+    @property
+    def timezone(self):
+        if not self._timezone:
+            self._timezone = self.get_timezone()
+        return self._timezone
 
     def stat(self, path):
         """

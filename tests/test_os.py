@@ -48,6 +48,10 @@ class TestOperatingSystem(object):
         ),
         'python -c "import platform;print(\',\'.join('
         'platform.linux_distribution()))"': (0, 'Fedora,23,Twenty Three', ''),
+        'uname -r ; uname -v ; uname -m': (
+            0, '4.18.0-135.el8\n#1 SMP Fri Aug 16 19:31:40 UTC\nx86_64\n', '',
+        ),
+        'date +%Z\\ %z': (0, 'IDT +0300', ''),
     }
     files = {}
 
@@ -83,6 +87,17 @@ class TestOperatingSystem(object):
         assert result['dist'] == 'Fedora'
         assert result['ver'] == '23'
         assert result['name'] == 'Twenty Three'
+
+    def test_get_kernel_info(self):
+        result = self.get_host().os.kernel_info
+        assert result.release == '4.18.0-135.el8'
+        assert result.version == '#1 SMP Fri Aug 16 19:31:40 UTC'
+        assert result.type == 'x86_64'
+
+    def test_get_timezone(self):
+        result = self.get_host().os.timezone
+        assert result.name == 'IDT'
+        assert result.offset == '+0300'
 
 
 class TestOperatingSystemNegative(object):
