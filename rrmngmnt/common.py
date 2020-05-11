@@ -86,8 +86,10 @@ class CommandReader(object):
                 while True:
                     line = out.readline()
                     self.out += line
-                    if not line:
+                    if line:
+                        yield line.strip('\n')
+                        continue
+                    if command.rc is not None:
                         break
-                    yield line.strip('\n')
                 self.rc = command.rc
                 self.err = err.read()
