@@ -17,6 +17,8 @@ class PlaybookRunnerBase(object):
     playbook_content = ''
     vars_file_name = 'my_vars.yml'
     vars_file_content = ''
+    vault_password_file_name = 'key.txt'
+    vault_password_file_content = ''
     inventory_name = 'my_inventory'
     inventory_content = ''
     ssh_no_strict_host_key_checking = "-o StrictHostKeyChecking=no"
@@ -35,6 +37,9 @@ class PlaybookRunnerBase(object):
         ): failure,
         '[ -d {tmp_dir}/{vars_file} ]'.format(
             tmp_dir=tmp_dir, vars_file=vars_file_name
+        ): failure,
+        '[ -d {tmp_dir}/{vault_password_file} ]'.format(
+            tmp_dir=tmp_dir, vault_password_file=vault_password_file_name,
         ): failure,
         '[ -d {tmp_dir}/{inventory} ]'.format(
             tmp_dir=tmp_dir, inventory=inventory_name
@@ -61,6 +66,17 @@ class PlaybookRunnerBase(object):
         '-v {tmp_dir}/{playbook}'.format(
             bin=PlaybookRunner.binary,
             vars_file=vars_file_name,
+            tmp_dir=tmp_dir,
+            inventory=PlaybookRunner.default_inventory_name,
+            playbook=playbook_name
+        ): success,
+        # Vault password file has been provided
+        '{bin} -e@{tmp_dir}/{vars_file} '
+        '--vault-password-file={tmp_dir}/{vault_password_file} '
+        '-i {tmp_dir}/{inventory} -v {tmp_dir}/{playbook}'.format(
+            bin=PlaybookRunner.binary,
+            vars_file=vars_file_name,
+            vault_password_file=vault_password_file_name,
             tmp_dir=tmp_dir,
             inventory=PlaybookRunner.default_inventory_name,
             playbook=playbook_name
@@ -232,6 +248,47 @@ class TestVarsFile(PlaybookRunnerBase):
                     self.tmp_dir, PlaybookRunner.default_inventory_name
                 ),
                 os.path.join(self.tmp_dir, self.vars_file_name)
+            ]
+        )
+
+
+class TestVaultPasswordFile(PlaybookRunnerBase):
+
+    files = {}
+
+    @pytest.fixture()
+    def fake_protected_file(self, tmpdir):
+        fpf = tmpdir.join(self.vars_file_name)
+        fpf.write(self.vars_file_content)
+        return str(fpf)
+
+    @pytest.fixture()
+    def fake_vault_password_file(self, tmpdir):
+        fvpf = tmpdir.join(self.vault_password_file_name)
+        fvpf.write(self.vault_password_file_content)
+        return str(fvpf)
+
+    def test_vault_password_file(
+        self, playbook_runner, fake_playbook,
+        fake_protected_file, fake_vault_password_file
+    ):
+        """
+        User has provided YAML file with variables protected by ansible-vault.
+        They also provided vault password file unlocking vars file.
+        """
+        rc, _, _ = playbook_runner.run(
+            playbook=fake_playbook,
+            vars_files=[fake_protected_file],
+            vault_password_file=fake_vault_password_file,
+        )
+        assert not rc
+        assert self.check_files_on_host(
+            [
+                os.path.join(
+                    self.tmp_dir, PlaybookRunner.default_inventory_name
+                ),
+                os.path.join(self.tmp_dir, self.vars_file_name),
+                os.path.join(self.tmp_dir, self.vault_password_file_name)
             ]
         )
 

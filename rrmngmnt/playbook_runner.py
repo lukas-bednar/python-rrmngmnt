@@ -107,7 +107,7 @@ class PlaybookRunner(Service):
     def run(
         self, playbook, extra_vars=None, vars_files=None, inventory=None,
         verbose_level=1, run_in_check_mode=False, ssh_common_args=None,
-        upload_playbook=True
+        upload_playbook=True, vault_password_file=None,
     ):
         """
         Run Ansible playbook on host
@@ -121,7 +121,8 @@ class PlaybookRunner(Service):
             vars_files (list): List of additional variable files to be included
                 using -e@ parameter. If one variable is specified both in
                 extra_vars and in one of the vars_files, the one in vars_files
-                takes precedence.
+                takes precedence. Provide local paths to vars file(s), they
+                will be uploaded to a remote host automatically.
             inventory (str): Path to an inventory file (on your machine) to be
                 used for playbook execution. If none is provided, default
                 inventory including only localhost will be generated and used
@@ -134,8 +135,13 @@ class PlaybookRunner(Service):
                 replace) the list of default options that Ansible uses when
                 calling ssh/sftp/scp. Example: ["-o StrictHostKeyChecking=no",
                 "-o UserKnownHostsFile=/dev/null"]
-            upload_playbook (bool): If the playbook is going to be uploaded
-                from the local machine (True - Default) or not (False)
+            upload_playbook (bool): Whether the playbook is going to be
+                automatically uploaded from the local machine to a remote host
+                (True - Default) or not (False).
+            vault_password_file (str): Local path to a vault password file.
+                It will be automatically uploaded to a remote host,
+                same as vars_files. This is required if any of the vars_files
+                are vault-protected.
 
         Returns:
             tuple: tuple of (rc, out, err)
@@ -157,6 +163,13 @@ class PlaybookRunner(Service):
             if vars_files:
                 for f in vars_files:
                     self.cmd.append("-e@{}".format(self._upload_file(f)))
+
+            if vault_password_file:
+                self.cmd.append(
+                    "--vault-password-file={}".format(
+                        self._upload_file(vault_password_file)
+                    )
+                )
 
             self.cmd.append("-i")
             if inventory:
