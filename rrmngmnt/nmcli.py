@@ -63,6 +63,7 @@ class EthernetOptions:
 class BondOptions:
     MODE = "mode"
     MIIMON = "miimon"
+    PRIMARY = "primary"
 
 
 class SlaveOptions:
@@ -293,6 +294,7 @@ class NMCLI(Service):
         con_name,
         ifname,
         mode=None,
+        primary=None,
         miimon=None,
         auto_connect=None,
         save=None,
@@ -313,6 +315,7 @@ class NMCLI(Service):
                 Available modes are: balance-rr (0) | active-backup (1) |
                 balance-xor (2) | broadcast (3)
                 802.3ad (4) | balance-tlb (5) | balance-alb (6)
+            primary (str): the primary slave name (to be used with mode 1).
             miimon (int): specifies (in milliseconds) how often MII link
                 monitoring occurs.
             auto_connect (bool): True to connect automatically, or False for
@@ -341,6 +344,8 @@ class NMCLI(Service):
             type_options[BondOptions.MODE] = mode
         if miimon:
             type_options[BondOptions.MIIMON] = miimon
+        if primary:
+            type_options[BondOptions.PRIMARY] = primary
 
         self._exec_command(
             command=self._nmcli_cmd_builder(

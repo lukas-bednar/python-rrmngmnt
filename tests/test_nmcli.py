@@ -729,6 +729,20 @@ class TestNmcliBondConnection(NmcliConnectionTypeIPConfigurable):
         "nmcli connection add "
         "type bond con-name bond_con ifname bond0 "
         "miimon 50": (0, "", ""),
+        (
+            "nmcli connection add "
+            "type bond con-name bond_con ifname bond0 "
+            "mode active-backup primary slave_0"
+        ): (0, "", ""),
+        (
+            "nmcli connection add "
+            "type bond con-name bond_con ifname bond0 "
+            "primary slave_0"
+        ): (
+            4, "", "Error: Failed to add 'bond-bond0' connection: "
+            "bond.options: 'primary' option is only valid for "
+            "'mode=active-backup'"
+        )
     }
 
     def test_add_connection_defaults(self, mock):
@@ -777,6 +791,22 @@ class TestNmcliBondConnection(NmcliConnectionTypeIPConfigurable):
         mock.network.nmcli.add_bond(
             con_name="bond_con", ifname="bond0", miimon=50
         )
+
+    def test_add_bond_with_primary_slave(self, mock):
+        mock.network.nmcli.add_bond(
+            con_name="bond_con",
+            ifname="bond0",
+            mode="active-backup",
+            primary="slave_0"
+        )
+
+    def test_add_bond_with_primary_slave_without_mode(self, mock):
+        with pytest.raises(expected_exception=CommandExecutionFailure):
+            mock.network.nmcli.add_bond(
+                con_name="bond_con",
+                ifname="bond0",
+                primary="slave_0"
+            )
 
     def test_add_connection_with_invalid_ipv4_address(self, mock):
         with pytest.raises(expected_exception=CommandExecutionFailure):
