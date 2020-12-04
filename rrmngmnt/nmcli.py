@@ -8,10 +8,6 @@ import shlex
 from rrmngmnt.errors import CommandExecutionFailure
 from rrmngmnt.service import Service
 
-ERROR_MSG_FORMAT = (
-    "command -> {command}\nRC -> {rc}\nOUT -> {out}\nERROR -> {err}"
-)
-
 
 class Objects:
     CONNECTION = "connection"
@@ -105,9 +101,11 @@ class NMCLI(Service):
 
         if rc != 0:
             self.logger.error(
-                ERROR_MSG_FORMAT.format(
-                    command=command, rc=rc, out=out, err=err
-                )
+                f"\n"
+                f"command -> {command}\n"
+                f"RC -> {rc}\n"
+                f"OUT -> {out}\n"
+                f"ERROR -> {err}"
             )
             raise CommandExecutionFailure(
                 executor=self._executor, cmd=split, rc=rc, err=err
@@ -133,10 +131,9 @@ class NMCLI(Service):
         connections = []
 
         out = self._exec_command(
-            command="nmcli -t {obj} {operation}".format(
-                obj=Objects.CONNECTION, operation=Operations.SHOW
+            command=f"nmcli -t {Objects.CONNECTION} {Operations.SHOW}"
             )
-        )
+
         for line in out.splitlines():
             properties = line.split(":")
             connections.append(
@@ -166,11 +163,8 @@ class NMCLI(Service):
                 indicating a failure in execution.
         """
         device_names = self._exec_command(
-            command="nmcli -g {name} {obj} {operation}".format(
-                name=NmGeneralSettings.DEVICE,
-                obj=Objects.DEVICE,
-                operation=Operations.SHOW,
-            )
+            command=f"nmcli -g {NmGeneralSettings.DEVICE} {Objects.DEVICE} "
+                    f"{Operations.SHOW}"
         )
         device_names = [
             name for name in device_names.splitlines() if name != ""
@@ -181,16 +175,10 @@ class NMCLI(Service):
         for name in device_names:
             out = self._exec_command(
                 command=(
-                    "nmcli -e no "
-                    "-g {type},{mac},{mtu} "
-                    "{obj} {operation} {device}"
-                ).format(
-                    type=NmGeneralSettings.TYPE,
-                    mac=NmGeneralSettings.MAC,
-                    mtu=NmGeneralSettings.MTU,
-                    obj=Objects.DEVICE,
-                    operation=Operations.SHOW,
-                    device=name,
+                    f"nmcli -e no "
+                    f"-g {NmGeneralSettings.TYPE},{NmGeneralSettings.MAC},"
+                    f"{NmGeneralSettings.MTU} "
+                    f"{Objects.DEVICE} {Operations.SHOW} {name}"
                 )
             )
             properties = out.splitlines()
@@ -219,9 +207,7 @@ class NMCLI(Service):
                 indicating a failure in execution.
         """
         self._exec_command(
-            command="nmcli {obj} {state} {connection}".format(
-                obj=Objects.CONNECTION, state=state, connection=connection
-            )
+            command=f"nmcli {Objects.CONNECTION} {state} {connection}"
         )
 
     def add_ethernet_connection(
@@ -619,21 +605,17 @@ class NMCLI(Service):
         command = ""
 
         if ipv4_method:
-            command += " ipv4.method {method}".format(method=ipv4_method)
+            command += f" ipv4.method {ipv4_method}"
         if ipv6_method:
-            command += " ipv6.method {method}".format(method=ipv6_method)
+            command += f" ipv6.method {ipv6_method}"
         if ipv4_addr:
-            command += " ipv4.addresses {ipv4_addr}".format(
-                ipv4_addr=ipv4_addr
-            )
+            command += f" ipv4.addresses {ipv4_addr}"
         if ipv4_gw:
-            command += " ipv4.gateway {ipv4_gw}".format(ipv4_gw=ipv4_gw)
+            command += f" ipv4.gateway {ipv4_gw}"
         if ipv6_addr:
-            command += " ipv6.addresses {ipv6_addr}".format(
-                ipv6_addr=ipv6_addr
-            )
+            command += f" ipv6.addresses {ipv6_addr}"
         if ipv6_gw:
-            command += " ipv6.gateway {ipv6_gw}".format(ipv6_gw=ipv6_gw)
+            command += f" ipv6.gateway {ipv6_gw}"
         return command
 
     @staticmethod
@@ -661,20 +643,16 @@ class NMCLI(Service):
             """
             return "yes" if value is True else "no"
 
-        common_options = (
-            "type {type} con-name {con_name}"
-        ).format(type=con_type, con_name=con_name)
+        common_options = f"type {con_type} con-name {con_name}"
 
         if ifname:
-            common_options += " ifname {ifname}".format(ifname=ifname)
+            common_options += f" ifname {ifname}"
         if auto_connect is not None:
-            common_options += " autoconnect {value}".format(
-                value=_get_str_value(value=auto_connect)
+            common_options += (
+                f" autoconnect {_get_str_value(value=auto_connect)}"
             )
         if save is not None:
-            common_options += " save {value}".format(
-                value=_get_str_value(value=save)
-            )
+            common_options += f" save {_get_str_value(value=save)}"
 
         return common_options
 
@@ -721,12 +699,10 @@ class NMCLI(Service):
         Returns:
             str: an nmcli command.
         """
-        command = "nmcli {object_type} {operation}".format(
-            object_type=object_type, operation=operation
-        )
+        command = f"nmcli {object_type} {operation}"
 
         if operation == Operations.DELETE or operation == Operations.MODIFY:
-            command += " {connection}".format(connection=name)
+            command += f" {name}"
 
         elif operation == Operations.ADD:
             command += " {common}".format(
@@ -741,9 +717,7 @@ class NMCLI(Service):
 
         if type_options:
             for _property, value in type_options.items():
-                command += " {_property} {value}".format(
-                    _property=_property, value=value
-                )
+                command += f" {_property} {value}"
 
         command += self._ip_options_builder(
             ipv4_addr=ipv4_addr,
