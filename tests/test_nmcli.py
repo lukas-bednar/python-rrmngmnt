@@ -861,7 +861,7 @@ class TestNmcliBondConnection(NmcliConnectionTypeIPConfigurable):
             )
 
 
-class TestNmcliSlaveConnection(NmcliConnectionTypeBase):
+class TestNmcliSlaveConnection(NmcliConnectionTypeIPConfigurable):
     """
     Testing scenarios for bond type connections.
     """
@@ -882,6 +882,50 @@ class TestNmcliSlaveConnection(NmcliConnectionTypeBase):
             "save yes master bond0"
         ): (0, "", ""),
         "nmcli -g GENERAL.TYPE device show enp8s0f0": (0, "ethernet", ""),
+        (
+            "nmcli connection add type ethernet con-name bond0_slave "
+            "ifname enp8s0f0"
+        ): (0, "", ""),
+        (
+            "nmcli connection add "
+            "type ethernet con-name bond0_slave ifname enp8s0f0 "
+            "ipv4.method manual ipv6.method manual "
+            "ipv4.addresses 192.168.23.2 ipv4.gateway 192.168.23.254 "
+            "ipv6.addresses 2a02:ed0:52fe:ec00:dc3f:f939:a573:5984 "
+            "ipv6.gateway 2a02:ed0:52fe:ec00::"
+        ): (0, "", ""),
+        (
+            "nmcli connection add "
+            "type ethernet con-name bond0_slave ifname enp8s0f0 "
+            "ipv4.method manual ipv6.method manual "
+            "ipv4.addresses 192.168.23.2.2 ipv4.gateway 192.168.23.254 "
+            "ipv6.addresses 2a02:ed0:52fe:ec00:dc3f:f939:a573:5984 "
+            "ipv6.gateway 2a02:ed0:52fe:ec00::"
+        ): (10, "", ""),
+        (
+            "nmcli connection add "
+            "type ethernet con-name bond0_slave ifname enp8s0f0 "
+            "ipv4.method manual ipv6.method manual "
+            "ipv4.addresses 192.168.23.2 ipv4.gateway 192.168.23.254.2 "
+            "ipv6.addresses 2a02:ed0:52fe:ec00:dc3f:f939:a573:5984 "
+            "ipv6.gateway 2a02:ed0:52fe:ec00::"
+        ): (10, "", ""),
+        (
+            "nmcli connection add "
+            "type ethernet con-name bond0_slave ifname enp8s0f0 "
+            "ipv4.method manual ipv6.method manual "
+            "ipv4.addresses 192.168.23.2 ipv4.gateway 192.168.23.254 "
+            "ipv6.addresses 2a02:ed0:52fe:ec00:dc3f:f939:a573 "
+            "ipv6.gateway 2a02:ed0:52fe:ec00::"
+        ): (10, "", ""),
+        (
+            "nmcli connection add "
+            "type ethernet con-name bond0_slave ifname enp8s0f0 "
+            "ipv4.method manual ipv6.method manual "
+            "ipv4.addresses 192.168.23.2 ipv4.gateway 192.168.23.254 "
+            "ipv6.addresses 2a02:ed0:52fe:ec00:dc3f:f939:a573:5984 "
+            "ipv6.gateway 2a02:ed0:52fe:ec00:"
+        ): (10, "", ""),
     }
 
     def test_add_connection_defaults(self, mock):
@@ -889,7 +933,6 @@ class TestNmcliSlaveConnection(NmcliConnectionTypeBase):
             con_name="bond0_slave",
             slave_type="ethernet",
             ifname="enp8s0f0",
-            master="bond0",
         )
 
     def test_add_connection_with_autoconnect(self, mock):
@@ -909,6 +952,83 @@ class TestNmcliSlaveConnection(NmcliConnectionTypeBase):
             master="bond0",
             save=True,
         )
+
+    def test_add_slave_with_master(self, mock):
+        mock.network.nmcli.add_slave(
+            con_name="bond0_slave",
+            slave_type="ethernet",
+            ifname="enp8s0f0",
+            master="bond0"
+        )
+
+    def test_add_connection_with_static_ips(self, mock):
+        mock.network.nmcli.add_slave(
+            con_name="bond0_slave",
+            slave_type="ethernet",
+            ifname="enp8s0f0",
+            ipv4_method="manual",
+            ipv4_addr="192.168.23.2",
+            ipv4_gw="192.168.23.254",
+            ipv6_method="manual",
+            ipv6_addr="2a02:ed0:52fe:ec00:dc3f:f939:a573:5984",
+            ipv6_gw="2a02:ed0:52fe:ec00::",
+        )
+
+    def test_add_connection_with_invalid_ipv4_address(self, mock):
+        with pytest.raises(expected_exception=CommandExecutionFailure):
+            mock.network.nmcli.add_slave(
+                con_name="bond0_slave",
+                slave_type="ethernet",
+                ifname="enp8s0f0",
+                ipv4_method="manual",
+                ipv4_addr="192.168.23.2.2",
+                ipv4_gw="192.168.23.254",
+                ipv6_method="manual",
+                ipv6_addr="2a02:ed0:52fe:ec00:dc3f:f939:a573:5984",
+                ipv6_gw="2a02:ed0:52fe:ec00::",
+            )
+
+    def test_add_connection_with_invalid_ipv6_address(self, mock):
+        with pytest.raises(expected_exception=CommandExecutionFailure):
+            mock.network.nmcli.add_slave(
+                con_name="bond0_slave",
+                slave_type="ethernet",
+                ifname="enp8s0f0",
+                ipv4_method="manual",
+                ipv4_addr="192.168.23.2",
+                ipv4_gw="192.168.23.254",
+                ipv6_method="manual",
+                ipv6_addr="2a02:ed0:52fe:ec00:dc3f:f939:a573",
+                ipv6_gw="2a02:ed0:52fe:ec00::",
+            )
+
+    def test_add_connection_with_invalid_ipv4_gateway(self, mock):
+        with pytest.raises(expected_exception=CommandExecutionFailure):
+            mock.network.nmcli.add_slave(
+                con_name="bond0_slave",
+                slave_type="ethernet",
+                ifname="enp8s0f0",
+                ipv4_method="manual",
+                ipv4_addr="192.168.23.2",
+                ipv4_gw="192.168.23.254.2",
+                ipv6_method="manual",
+                ipv6_addr="2a02:ed0:52fe:ec00:dc3f:f939:a573:5984",
+                ipv6_gw="2a02:ed0:52fe:ec00::",
+            )
+
+    def test_add_connection_with_invalid_ipv6_gateway(self, mock):
+        with pytest.raises(expected_exception=CommandExecutionFailure):
+            mock.network.nmcli.add_slave(
+                con_name="bond0_slave",
+                slave_type="ethernet",
+                ifname="enp8s0f0",
+                ipv4_method="manual",
+                ipv4_addr="192.168.23.2",
+                ipv4_gw="192.168.23.254",
+                ipv6_method="manual",
+                ipv6_addr="2a02:ed0:52fe:ec00:dc3f:f939:a573:5984",
+                ipv6_gw="2a02:ed0:52fe:ec00:",
+            )
 
 
 class TestNmcliVlanConnection(NmcliConnectionTypeIPConfigurable):

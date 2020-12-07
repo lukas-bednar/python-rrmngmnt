@@ -357,9 +357,15 @@ class NMCLI(Service):
         con_name,
         slave_type,
         ifname,
-        master,
+        master=None,
         auto_connect=None,
         save=None,
+        ipv4_method=None,
+        ipv4_addr=None,
+        ipv4_gw=None,
+        ipv6_method=None,
+        ipv6_addr=None,
+        ipv6_gw=None,
     ):
         """
         Creates a bond slave.
@@ -372,12 +378,23 @@ class NMCLI(Service):
             auto_connect (bool): True to connect automatically, or False for
                 manual.
             save (bool): True to persist the connection, or False.
+            ipv4_method (str): setting method.
+                Available methods: auto, disabled, link-local, manual, shared.
+            ipv4_addr (str): a static address.
+            ipv4_gw (str): a gateway address.
+            ipv6_method (str): setting method.
+                Available methods: auto, dhcp, disabled, ignore, link-local,
+                manual, shared.
+            ipv6_addr (str): a static address.
+            ipv6_gw (str): a gateway address.
 
         Raises:
             CommandExecutionFailure: if the remote host returned a code
                 indicating a failure in execution.
         """
-        type_options = {SlaveOptions.MASTER: master}
+        type_options = {}
+        if master:
+            type_options = {SlaveOptions.MASTER: master}
 
         self._exec_command(
             command=self._nmcli_cmd_builder(
@@ -388,6 +405,12 @@ class NMCLI(Service):
                 ifname=ifname,
                 auto_connect=auto_connect,
                 save=save,
+                ipv4_method=ipv4_method,
+                ipv4_addr=ipv4_addr,
+                ipv4_gw=ipv4_gw,
+                ipv6_method=ipv6_method,
+                ipv6_addr=ipv6_addr,
+                ipv6_gw=ipv6_gw,
                 type_options=type_options,
             )
         )
