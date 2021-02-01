@@ -133,6 +133,12 @@ class BasePackageManager(object):
     def get_pm(self):
         return self.get_host().package_manager
 
+    def test_info(self):
+        assert not self.get_pm().info(self.packages['installed_1'])
+
+    def test_info_negative(self):
+        assert not self.get_pm().info(self.packages['not_installed'])
+
     def test_exist(self):
         assert self.get_pm().exist(self.packages['installed_1'])
 

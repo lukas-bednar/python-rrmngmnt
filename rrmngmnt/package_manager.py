@@ -26,7 +26,7 @@ class PackageManager(Service):
         )
         return not rc
 
-    def _run_command_on_host(self, cmd):
+    def _execute_cmd(self, cmd):
         """
         Run given command on host
 
@@ -34,7 +34,7 @@ class PackageManager(Service):
             cmd (list): Command to run
 
         Returns:
-            bool: True, if command success, otherwise false
+            tuple or None: True, if command success, otherwise false
         """
         self.logger.info(
             "Execute command '%s' on host %s", " ".join(cmd), self.host
@@ -45,8 +45,40 @@ class PackageManager(Service):
                 "Failed to execute command '%s' on host %s; out: %s; err: %s",
                 " ".join(cmd), self.host, out, err
             )
-            return False
-        return True
+            return
+
+        return rc, out, err
+
+    def _run_command_on_host(self, cmd):
+        """
+        Run given command on host
+
+        Args:
+            cmd (list): Command to run
+
+        Returns:
+            bool: True, if command success, otherwise false
+        """
+        res = self._execute_cmd(cmd=cmd)
+        return bool(res)
+
+    def info(self, package):
+        """
+        Get package info
+
+        Args:
+            package (str): Name of package.
+
+        Returns:
+            str or None: package info or None.
+        """
+        if not self.exist_command_d:
+            raise NotImplementedError("There is no 'exist' command defined.")
+
+        cmd = list(self.exist_command_d)
+        cmd.append(package)
+        res = self._execute_cmd(cmd=cmd)
+        return res[1] if res else res
 
     def exist(self, package):
         """
