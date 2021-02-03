@@ -73,6 +73,7 @@ class Host(Resource):
         self._package_manager = PackageManagerProxy(self)
         self.os = OperatingSystem(self)
         self.add()  # adding host to inventory
+        self.sudo = False
 
     def __str__(self):
         return "Host(%s)" % self.ip
@@ -210,7 +211,7 @@ class Host(Resource):
     def power_manager(self):
         return self.get_power_manager()
 
-    def executor(self, user=None, pkey=False):
+    def executor(self, user=None, pkey=False, sudo=False):
         """
         Gives you executor to allowing command execution
 
@@ -219,6 +220,9 @@ class Host(Resource):
                 user. when it is None, the default executor user is used,
                 see set_executor_user method for more info.
         """
+        if sudo:
+            self.sudo = True
+
         if user is None:
             user = self.executor_user
         if pkey:
@@ -229,7 +233,7 @@ class Host(Resource):
             ef = copy.copy(ssh.RemoteExecutorFactory)
             ef.use_pkey = pkey
             return ef(self.ip, user)
-        return self.executor_factory.build(self, user)
+        return self.executor_factory.build(self, user, sudo=self.sudo)
 
     def run_command(
         self, command, input_=None, tcp_timeout=None, io_timeout=None,

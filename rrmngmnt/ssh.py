@@ -122,6 +122,9 @@ class RemoteExecutor(Executor):
             return RemoteExecutor.Command(cmd, self)
 
         def run_cmd(self, cmd, input_=None, timeout=None):
+            if self._executor.sudo:
+                cmd.insert(0, "sudo")
+
             cmd = self.command(cmd)
             return cmd.run(input_, timeout)
 
@@ -206,18 +209,20 @@ class RemoteExecutor(Executor):
                 self.err = normalize_string(err.read())
             return self.rc, self.out, self.err
 
-    def __init__(self, user, address, use_pkey=False, port=22):
+    def __init__(self, user, address, use_pkey=False, port=22, sudo=False):
         """
         Args:
             use_pkey (bool): Use ssh private key in the connection
             user (instance of User): User
             address (str): Ip / hostname
             port (int): Port to connect
+            sudo (bool): Use sudo to execute command.
         """
         super(RemoteExecutor, self).__init__(user)
         self.address = address
         self.use_pkey = use_pkey
         self.port = port
+        self.sudo = sudo
 
     def session(self, timeout=None):
         """
@@ -306,6 +311,6 @@ class RemoteExecutorFactory(ExecutorFactory):
         self.use_pkey = use_pkey
         self.port = port
 
-    def build(self, host, user):
+    def build(self, host, user, sudo=False):
         return RemoteExecutor(
-            user, host.ip, use_pkey=self.use_pkey, port=self.port)
+            user, host.ip, use_pkey=self.use_pkey, port=self.port, sudo=sudo)

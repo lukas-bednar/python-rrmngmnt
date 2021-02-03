@@ -25,6 +25,9 @@ that means SSH server must be running there already.
     host.executor_factory = rrmngmnt.ssh.RemoteExecutorFactory(use_pkey=True)
 
     exec = h.executor()
+    # Run with sudo
+    exec = h.executor(sudo=True)
+
     print exec.run_cmd(['echo', 'Hello World'])
 
 
