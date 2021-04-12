@@ -230,9 +230,9 @@ class Host(Resource):
                 "Parameter 'pkey' is deprecated and will be removed in future."
                 "Please use ssh.RemoteExecutorFactory to set this parameter."
             )
-            ef = copy.copy(ssh.RemoteExecutorFactory)
+            ef = copy.copy(self.executor_factory)
             ef.use_pkey = pkey
-            return ef(self.ip, user)
+            return ef.build(self, user, self.sudo)
         return self.executor_factory.build(self, user, sudo=self.sudo)
 
     def run_command(

@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+
+
 from rrmngmnt import Host, User, RootUser
+from rrmngmnt.executor import Executor
 import pytest
 
 
@@ -30,6 +33,11 @@ class TestExecutorUser(object):
         h.executor_user = user
         e = h.executor()
         e.user.name == 'lukas'
+
+    def test_executor_with_pkey(self):
+        user = User('core', '12')
+        e = get_host().executor(user, pkey=True)
+        assert isinstance(e, Executor)
 
 
 class TestHostFqdnIp(object):
