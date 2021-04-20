@@ -228,7 +228,7 @@ class Host(Resource):
         if pkey:
             warnings.warn(
                 "Parameter 'pkey' is deprecated and will be removed in future."
-                "Please use ssh.RemoteExecutorFactory to set this parameter."
+                "Please use user.UserWithPKey user instead."
             )
             ef = copy.copy(self.executor_factory)
             ef.use_pkey = pkey

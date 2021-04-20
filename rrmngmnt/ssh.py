@@ -4,8 +4,10 @@ import socket
 import paramiko
 import contextlib
 import subprocess
+import warnings
 from rrmngmnt.common import normalize_string
 from rrmngmnt.executor import Executor, ExecutorFactory
+from rrmngmnt.user import UserWithPKey
 
 
 AUTHORIZED_KEYS = os.path.join("%s", ".ssh/authorized_keys")
@@ -42,7 +44,7 @@ class RemoteExecutor(Executor):
                 "[%s@%s/%s] %s" % (
                     self.extra['self'].user.name,
                     self.extra['self'].address,
-                    self.extra['self'].user.password,
+                    self.extra['self'].user.credentials,
                     msg,
                 ),
                 kwargs,
@@ -59,7 +61,11 @@ class RemoteExecutor(Executor):
             self._timeout = timeout
             self._ssh = paramiko.SSHClient()
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            if self._executor.use_pkey:
+            if isinstance(self._executor.user, UserWithPKey):
+                self.pkey = paramiko.RSAKey.from_private_key_file(
+                    self._executor.user.private_key
+                )
+            elif self._executor.use_pkey:
                 self.pkey = paramiko.RSAKey.from_private_key_file(
                     os.getenv(
                         "HOST_SSH_KEY", ID_RSA_PRV % os.path.expanduser('~')
@@ -223,6 +229,11 @@ class RemoteExecutor(Executor):
         self.use_pkey = use_pkey
         self.port = port
         self.sudo = sudo
+        if use_pkey:
+            warnings.warn(
+                "Parameter 'use_pkey' is deprecated and will be removed in future."
+                "Please use user.UserWithPKey user instead."
+            )
 
     def session(self, timeout=None):
         """
@@ -310,6 +321,11 @@ class RemoteExecutorFactory(ExecutorFactory):
     def __init__(self, use_pkey=False, port=22):
         self.use_pkey = use_pkey
         self.port = port
+        if use_pkey:
+            warnings.warn(
+                "Parameter 'use_pkey' is deprecated and will be removed in future."
+                "Please use user.UserWithPKey user instead."
+            )
 
     def build(self, host, user, sudo=False):
         return RemoteExecutor(

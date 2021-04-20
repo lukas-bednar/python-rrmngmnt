@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from rrmngmnt import User, InternalDomain, ADUser, Domain
+from rrmngmnt import User, UserWithPKey, InternalDomain, ADUser, Domain
 
 
 def test_user():
@@ -16,3 +16,8 @@ def test_domain():
     assert "user@example.com" == ADUser(
         "user", "pass", Domain("example.com"),
     ).full_name
+
+def test_user_with_pkey():
+    user = UserWithPKey("user", "/path/to/key")
+    assert 'user' == user.full_name
+    assert '/path/to/key' == user.credentials

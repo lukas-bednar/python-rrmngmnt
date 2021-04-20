@@ -1,3 +1,4 @@
+import os
 from rrmngmnt.resource import Resource
 
 
@@ -18,6 +19,27 @@ class User(Resource):
 
     def get_full_name(self):
         return self.name
+
+    @property
+    def credentials(self):
+        return self.get_credentials()
+
+    def get_credentials(self):
+        return self.password
+
+
+class UserWithPKey(User):
+    def __init__(self, name, private_key):
+        """
+        Args:
+            private_key (str): Path to private key
+            name (str): User name
+        """
+        super(UserWithPKey, self).__init__(name, None)
+        self.private_key = os.path.expanduser(private_key)
+
+    def get_credentials(self):
+        return self.private_key
 
 
 class RootUser(User):

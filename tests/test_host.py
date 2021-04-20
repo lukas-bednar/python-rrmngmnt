@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from rrmngmnt import Host, User, RootUser
+from rrmngmnt import Host, User, RootUser, UserWithPKey
 from rrmngmnt.executor import Executor
 import pytest
 
@@ -27,12 +27,18 @@ class TestExecutorUser(object):
         e = get_host().executor(user=user)
         assert e.user.name == 'lukas'
 
+    def test_pkey_user(self):
+        user = UserWithPKey('lukas', '/path/to/key')
+        e = get_host().executor(user=user)
+        assert e.user.name == 'lukas'
+        assert e.user.credentials == '/path/to/key'
+
     def test_executor_user(self):
         user = User('lukas', '123456')
         h = get_host()
         h.executor_user = user
         e = h.executor()
-        e.user.name == 'lukas'
+        assert e.user.name == 'lukas'
 
     def test_executor_with_pkey(self):
         user = User('core', '12')
