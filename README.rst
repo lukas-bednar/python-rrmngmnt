@@ -21,15 +21,22 @@ that means SSH server must be running there already.
     h = Host("10.11.12.13")
     h.users.append(RootUser('123456'))
 
-    # Use with ssh key. export HOST_SSH_KEY to use specific ssh key, default is ~/.ssh/id_rsa
-    host.executor_factory = rrmngmnt.ssh.RemoteExecutorFactory(use_pkey=True)
-
     exec = h.executor()
     # Run with sudo
     exec = h.executor(sudo=True)
 
     print exec.run_cmd(['echo', 'Hello World'])
 
+Using SSH key for authentication
+
+.. code:: python
+
+    from rrmngmnt import Host, UserWithPKey
+
+    h = Host("10.11.12.13")
+    user = UserWithPKey('user', '/path/to/pkey'))
+
+    h.executor(user).run_cmd(['echo', 'Use pkey for auth instead of password'])
 
 Features
 --------
