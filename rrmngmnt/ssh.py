@@ -127,12 +127,12 @@ class RemoteExecutor(Executor):
         def command(self, cmd):
             return RemoteExecutor.Command(cmd, self)
 
-        def run_cmd(self, cmd, input_=None, timeout=None):
+        def run_cmd(self, cmd, input_=None, timeout=None, get_pty=False):
             if self._executor.sudo:
                 cmd.insert(0, "sudo")
 
             cmd = self.command(cmd)
-            return cmd.run(input_, timeout)
+            return cmd.run(input_, timeout, get_pty=get_pty)
 
         @contextlib.contextmanager
         def open_file(self, path, mode='r', bufsize=-1):
@@ -245,19 +245,28 @@ class RemoteExecutor(Executor):
         """
         return RemoteExecutor.Session(self, timeout)
 
-    def run_cmd(self, cmd, input_=None, tcp_timeout=None, io_timeout=None):
+    def run_cmd(
+            self,
+            cmd,
+            input_=None,
+            tcp_timeout=None,
+            io_timeout=None,
+            get_pty=False
+    ):
         """
         Args:
             tcp_timeout (float): Tcp timeout
             cmd (list): Command
             input_ (str): Input data
             io_timeout (float): Timeout for data operation (read/write)
+            get_pty (bool) : get pseudoterminal
+                (equivalent to passing -t arg to ssh)
 
         Returns:
             tuple (int, str, str): Rc, out, err
         """
         with self.session(tcp_timeout) as session:
-            return session.run_cmd(cmd, input_, io_timeout)
+            return session.run_cmd(cmd, input_, io_timeout, get_pty=get_pty)
 
     def is_connective(self, tcp_timeout=20.0):
         """
