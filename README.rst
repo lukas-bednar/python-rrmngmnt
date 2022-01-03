@@ -1,7 +1,3 @@
-|Build Status|
-|Code Coverage|
-|Code Health|
-
 python-rrmngmnt
 ===============
 
@@ -232,9 +228,3 @@ Test
 
     tox
 
-.. |Build Status| image:: https://travis-ci.org/rhevm-qe-automation/python-rrmngmnt.svg?branch=master
-   :target: https://travis-ci.org/rhevm-qe-automation/python-rrmngmnt
-.. |Code Coverage| image:: https://codecov.io/gh/rhevm-qe-automation/python-rrmngmnt/branch/master/graph/badge.svg
-   :target: https://codecov.io/gh/rhevm-qe-automation/python-rrmngmnt
-.. |Code Health| image:: https://landscape.io/github/rhevm-qe-automation/python-rrmngmnt/master/landscape.svg?style=flat
-   :target: https://landscape.io/github/rhevm-qe-automation/python-rrmngmnt/master
