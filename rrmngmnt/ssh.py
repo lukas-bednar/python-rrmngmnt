@@ -98,6 +98,7 @@ class RemoteExecutor(Executor):
                     timeout=self._timeout,
                     pkey=self.pkey,
                     port=self._executor.port,
+                    disabled_algorithms=self._executor.disabled_algorithms
                 )
             except (socket.gaierror, socket.herror) as ex:
                 args = list(ex.args)
@@ -215,7 +216,13 @@ class RemoteExecutor(Executor):
                 self.err = normalize_string(err.read())
             return self.rc, self.out, self.err
 
-    def __init__(self, user, address, use_pkey=False, port=22, sudo=False):
+    def __init__(self,
+                 user,
+                 address,
+                 use_pkey=False,
+                 port=22,
+                 sudo=False,
+                 disabled_algorithms=None):
         """
         Args:
             use_pkey (bool): Use ssh private key in the connection
@@ -229,6 +236,7 @@ class RemoteExecutor(Executor):
         self.use_pkey = use_pkey
         self.port = port
         self.sudo = sudo
+        self.disabled_algorithms = disabled_algorithms
         if use_pkey:
             warnings.warn(
                 "Parameter 'use_pkey' is deprecated and will be removed in "
@@ -327,9 +335,10 @@ class RemoteExecutor(Executor):
 
 
 class RemoteExecutorFactory(ExecutorFactory):
-    def __init__(self, use_pkey=False, port=22):
+    def __init__(self, use_pkey=False, port=22, disabled_algorithms=None):
         self.use_pkey = use_pkey
         self.port = port
+        self.disabled_algorithms = disabled_algorithms
         if use_pkey:
             warnings.warn(
                 "Parameter 'use_pkey' is deprecated and will be removed in "
@@ -338,4 +347,9 @@ class RemoteExecutorFactory(ExecutorFactory):
 
     def build(self, host, user, sudo=False):
         return RemoteExecutor(
-            user, host.ip, use_pkey=self.use_pkey, port=self.port, sudo=sudo)
+            user,
+            host.ip,
+            use_pkey=self.use_pkey,
+            port=self.port,
+            sudo=sudo,
+            disabled_algorithms=self.disabled_algorithms)
