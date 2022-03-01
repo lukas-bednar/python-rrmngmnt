@@ -46,6 +46,14 @@ Using SSH key with disabled algorithms on paramiko SSHClient connect (Used when 
 
     h.executor(user).run_cmd(['echo', 'Use pkey and disabled algorithms for old openSSH connection'])
 
+Using with SSH ProxyCommand
+.. code:: python
+
+    proxy_command = 'some proxy command'
+    h = Host(hostname="hostname")
+    host.executor_factory = ssh.RemoteExecutorFactory(sock=proxy_command)
+    h.executor(user).run_cmd(['echo', 'Use SSH with ProxyCommand'])
+
 Features
 --------
 

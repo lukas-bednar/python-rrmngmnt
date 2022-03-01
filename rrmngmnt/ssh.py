@@ -98,7 +98,8 @@ class RemoteExecutor(Executor):
                     timeout=self._timeout,
                     pkey=self.pkey,
                     port=self._executor.port,
-                    disabled_algorithms=self._executor.disabled_algorithms
+                    disabled_algorithms=self._executor.disabled_algorithms,
+                    sock=self._executor.sock,
                 )
             except (socket.gaierror, socket.herror) as ex:
                 args = list(ex.args)
@@ -222,7 +223,9 @@ class RemoteExecutor(Executor):
                  use_pkey=False,
                  port=22,
                  sudo=False,
-                 disabled_algorithms=None):
+                 disabled_algorithms=None,
+                 sock=None,
+                 ):
         """
         Args:
             use_pkey (bool): Use ssh private key in the connection
@@ -230,6 +233,7 @@ class RemoteExecutor(Executor):
             address (str): Ip / hostname
             port (int): Port to connect
             sudo (bool): Use sudo to execute command.
+            sock (ProxyCommand): Proxy command to use.
         """
         super(RemoteExecutor, self).__init__(user)
         self.address = address
@@ -237,6 +241,7 @@ class RemoteExecutor(Executor):
         self.port = port
         self.sudo = sudo
         self.disabled_algorithms = disabled_algorithms
+        self.sock = sock
         if use_pkey:
             warnings.warn(
                 "Parameter 'use_pkey' is deprecated and will be removed in "
@@ -335,10 +340,13 @@ class RemoteExecutor(Executor):
 
 
 class RemoteExecutorFactory(ExecutorFactory):
-    def __init__(self, use_pkey=False, port=22, disabled_algorithms=None):
+    def __init__(
+        self, use_pkey=False, port=22, disabled_algorithms=None, sock=None
+    ):
         self.use_pkey = use_pkey
         self.port = port
         self.disabled_algorithms = disabled_algorithms
+        self.sock = sock
         if use_pkey:
             warnings.warn(
                 "Parameter 'use_pkey' is deprecated and will be removed in "
@@ -352,4 +360,6 @@ class RemoteExecutorFactory(ExecutorFactory):
             use_pkey=self.use_pkey,
             port=self.port,
             sudo=sudo,
-            disabled_algorithms=self.disabled_algorithms)
+            disabled_algorithms=self.disabled_algorithms,
+            sock=paramiko.ProxyCommand(self.sock) if self.sock else self.sock,
+        )

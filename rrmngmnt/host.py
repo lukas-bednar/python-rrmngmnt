@@ -10,6 +10,7 @@ import threading
 import warnings
 
 import netaddr
+
 from rrmngmnt import errors
 from rrmngmnt import power_manager
 from rrmngmnt import ssh
@@ -56,15 +57,24 @@ class Host(Resource):
                 kwargs,
             )
 
-    def __init__(self, ip, service_provider=None):
+    def __init__(self, ip=None, service_provider=None, hostname=None):
         """
         Args:
             ip (str): IP address of machine or resolvable FQDN
             service_provider (Service): system service handler
+            hostname (str): hostname of machine (Used with ProxyCommand)
         """
         super(Host, self).__init__()
-        if not netaddr.valid_ipv4(ip) and not netaddr.valid_ipv6(ip):
-            ip = fqdn2ip(ip)
+        if hostname:
+            # When using ProxyCommand host is not IP and does not have fqdn.
+            ip = hostname
+        else:
+            if not netaddr.valid_ipv4(ip) and not netaddr.valid_ipv6(ip):
+                ip = fqdn2ip(ip)
+
+        if not ip:
+            raise ValueError("ip or hostname is required")
+
         self.ip = ip
         self.users = list()
         self._executor_user = None
@@ -233,7 +243,10 @@ class Host(Resource):
             ef = copy.copy(self.executor_factory)
             ef.use_pkey = pkey
             return ef.build(self, user, self.sudo)
-        return self.executor_factory.build(self, user, sudo=self.sudo)
+
+        return self.executor_factory.build(
+            self, user, sudo=self.sudo
+        )
 
     def run_command(
         self, command, input_=None, tcp_timeout=None, io_timeout=None,
