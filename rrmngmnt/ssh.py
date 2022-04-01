@@ -62,12 +62,12 @@ class RemoteExecutor(Executor):
             self._ssh = paramiko.SSHClient()
             self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             if isinstance(self._executor.user, UserWithPKey):
-                self.pkey = paramiko.RSAKey.from_private_key_file(
-                    self._executor.user.private_key
+                self.pkey = self._get_pkey(
+                    filename=self._executor.user.private_key
                 )
             elif self._executor.use_pkey:
-                self.pkey = paramiko.RSAKey.from_private_key_file(
-                    os.getenv(
+                self.pkey = self._get_pkey(
+                    filename=os.getenv(
                         "HOST_SSH_KEY", ID_RSA_PRV % os.path.expanduser('~')
                     )
                 )
@@ -147,6 +147,21 @@ class RemoteExecutor(Executor):
                     )
                 ) as fh:
                     yield fh
+
+        @staticmethod
+        def _get_pkey(filename):
+            errors = []
+            for key_type in (
+                    paramiko.RSAKey,
+                    paramiko.ECDSAKey,
+                    paramiko.Ed25519Key,
+            ):
+                try:
+                    return key_type.from_private_key_file(filename=filename)
+                except paramiko.ssh_exception.SSHException as exp:
+                    errors.append(str(exp))
+                    continue
+            raise paramiko.ssh_exception.SSHException(f"Invalid Key {errors}")
 
     class Command(Executor.Command):
         """
