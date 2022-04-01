@@ -20,7 +20,7 @@ def provisioned_hosts(docker_ip, docker_services):
     return hosts
 
 
-@pytest.mark.skip(msg="Not enough tests in module to justify running")
+@pytest.mark.skip(reason="Not enough tests in module to justify running")
 def test_echo(provisioned_hosts):
     ubuntu_host = provisioned_hosts['ubuntu']
     ubuntu_host.executor().run_cmd(['echo', 'hello'])
